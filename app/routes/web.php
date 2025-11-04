@@ -1,8 +1,8 @@
 <?php
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DisplayController;
+use App\Http\Controllers\User\DisplayController;
+use App\Http\Controllers\User\RegistrationController;
 use App\Http\Controllers\AjaxController;
-use App\Http\Controllers\RegistrationController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -14,19 +14,11 @@ use App\Http\Controllers\RegistrationController;
 |
 */
 // DisplayController
-Route::controller(DisplayController::class)->group(function () {
-    Route::get('/search', 'search')->name('search.events');
-});
+Route::get('/user_main', [DisplayController::class, 'index'])->name('user_main');
+Route::get('/search', [DisplayController::class, 'search'])->name('search.events');
 
 // AjaxController
-Route::controller(AjaxController::class)->group(function () {
-    Route::get('/ajax/events/{type}', 'fetchEventsByType')->name('ajax.events.fetch');
-});
+Route::get('/ajax/events/{type}', [AjaxController::class, 'fetchEventsByType'])->name('ajax.events.fetch');
 
 // RegistrationController
-Route::controller(RegistrationController::class)->group(function () {
-    Route::get('/events/{type}', 'fetchByType');
-});
-
-// 単純ビュー
-Route::view('/user_main', 'user_main');
+Route::get('/events/{type}', [RegistrationController::class, 'fetchByType'])->name('events.by_type');
