@@ -5,7 +5,8 @@
         <h3>{{ $event->title }}</h3>
         <p>📅 {{ $event->date }} {{ $event->start_time }}</p>
         <p>📺 {{ $event->format }}</p>
-        <a href="{{ route('user_main', $event->id) }}">詳細を見る</a>
+        <p>{{ $comment->content }}</p>
+        <a href="{{ route('events.detail', ['id' => $event['id']]) }}">詳細を見る</a>
       </div>
     @endforeach
   </div>

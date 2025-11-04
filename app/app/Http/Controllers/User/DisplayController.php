@@ -29,7 +29,7 @@ class DisplayController extends Controller
     /**
      * イベント検索処理（キーワードなど）
      */
-    public function search(Request $request)
+    public function main(Request $request)
     {
         $keyword = $request->input('keyword');
 
@@ -48,4 +48,27 @@ class DisplayController extends Controller
             'message' => "検索キーワード: " . ($keyword ?: '未入力'),
         ]);
     }
+
+    public function eventDetail($id)
+{
+    // イベントモデルを読み込み
+    $event = \App\Models\Event::find($id);
+    $related = collect([
+        (object)['title' => '関連イベントA'],
+        (object)['title' => '関連イベントB'],
+        (object)['title' => '関連イベントC'],
+    ]);
+    $comments = collect([
+        (object)['user' => 'ユーザーA', 'content' => '楽しみです！'],
+        (object)['user' => 'ユーザーB', 'content' => 'よろしくお願いします！']
+    ]);
+
+    // データが存在しない場合は404を返す
+    if (!$event) {
+        abort(404, 'イベントが見つかりません');
+    }
+
+    // user_event_detail.blade.php にデータを渡す
+    return view('user.user_event_detail', compact('event', 'related', 'comments'));
+}
 }

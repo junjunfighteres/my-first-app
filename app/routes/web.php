@@ -14,7 +14,8 @@ use App\Http\Controllers\AjaxController;
 |
 */
 // DisplayController
-Route::get('/user_main', [DisplayController::class, 'index'])->name('user_main');
+Route::get('/user_main', [DisplayController::class, 'main'])->name('user_main');
+Route::get('/user_main/{id}/detail', [DisplayController::class, 'eventDetail'])->name('events.detail');
 Route::get('/search', [DisplayController::class, 'search'])->name('search.events');
 
 // AjaxController
