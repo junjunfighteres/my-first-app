@@ -23,3 +23,6 @@ Route::get('/ajax/events/{type}', [AjaxController::class, 'fetchEventsByType'])-
 
 // RegistrationController
 Route::get('/events/{type}', [RegistrationController::class, 'fetchByType'])->name('events.by_type');
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
