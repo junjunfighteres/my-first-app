@@ -47,10 +47,17 @@ class EventController extends Controller
      * @param  \App\Event  $event
      * @return \Illuminate\Http\Response
      */
-    public function show(Event $event)
-    {
-        //
+    public function show(Event $event) {
+    // 関連イベントを取得（同じ形式で、現在のイベント以外）
+        $related = Event::where('format', $event->format)
+            ->where('id', '!=', $event->id)
+            ->where('del_flg', 0)
+            ->limit(6)
+            ->get();
+
+        return view('user.events.detail', compact('event', 'related'));
     }
+
 
     /**
      * Show the form for editing the specified resource.

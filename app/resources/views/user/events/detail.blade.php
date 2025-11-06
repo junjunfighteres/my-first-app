@@ -5,7 +5,7 @@
 
     {{-- 戻るリンク --}}
     <div class="mb-4">
-        <!-- <a href="{{ route('search.events') }}" class="text-blue-600 hover:underline">🔙 イベント一覧へ戻る</a> -->
+        {{-- <a href="{{ route('events.index') }}" class="text-blue-600 hover:underline">🔙 イベント一覧へ戻る</a> --}}
     </div>
 
     {{-- イベント概要 --}}
@@ -19,7 +19,7 @@
             <h1 class="text-2xl font-bold mb-2">{{ $event->title }}</h1>
             <p class="text-gray-700 mb-2">
                 主催者：
-                <a href="{{ route('user_main', ['id' => $event->organizer_id]) }}" 
+                <a href="{{ route('events.index', ['id' => $event->organizer_id]) }}" 
                    class="text-blue-600 hover:underline">
                    {{ $event->organizer_name }}
                 </a>
@@ -31,9 +31,9 @@
 
             {{-- アクションボタン --}}
             <div class="mt-4 flex flex-wrap gap-3">
-                <form action="{{ route('user_main', $event->id) }}" method="POST">
+                <form action="{{ route('events.index', $event->id) }}" method="POST">
                     @csrf
-                    <form action="{{ route('user_main', ['event' => $event->id]) }}" method="GET">
+                    <form action="{{ route('events.index', ['event' => $event->id]) }}" method="GET">
                         <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">参加する</button>
                     </form>
                         <button class="bg-yellow-400 hover:bg-yellow-500 px-4 py-2 rounded-lg">ブックマーク</button>
@@ -62,7 +62,7 @@
     {{-- コメント欄 --}}
     <div class="mb-6">
         <h2 class="text-xl font-semibold mb-2">💬 コメント欄</h2>
-        <form action="{{ route('user_main', $event->id) }}" method="POST" class="mb-4">
+        <form action="{{ route('events.index', $event->id) }}" method="POST" class="mb-4">
             @csrf
             <div class="flex gap-2">
                 <input type="text" name="comment" placeholder="コメントを入力..." 

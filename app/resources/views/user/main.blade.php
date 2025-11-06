@@ -3,7 +3,7 @@
 @section('title', 'ユーザーメイン')
 
 @section('content')
-  <form action="{{ route('search.events') }}" method="GET" class="p-4 bg-light rounded">
+  <form action="{{ route('events.index') }}" method="GET" class="p-4 bg-light rounded">
     <div class="d-flex gap-3 align-items-end flex-wrap">
       <div>
         <label>キーワード</label>
@@ -40,7 +40,7 @@
 
       <div class="ms-auto">
         <button type="submit" class="btn btn-primary">検索</button>
-        <a href="{{ route('search.events') }}" class="btn btn-secondary">クリア</a>
+        <a href="{{ route('events.index') }}" class="btn btn-secondary">クリア</a>
       </div>
     </div>
     <div class="tabs">

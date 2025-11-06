@@ -1,6 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Models\User;
+use App\Models\Event;
+use App\Models\Application;
+use App\Models\Report;
+use App\Models\Bookmark;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,7 +39,7 @@ use Illuminate\Support\Facades\Route;
 Route::namespace('User')->group(function () {
 
     // 7. 一般メインページ
-    Route::get('/', 'DisplayController@index')->name('user.home');
+    Route::get('/', 'DisplayController@index')->name('user.main');
 
     // ============================
     // Event（閲覧・参加者向け）
@@ -117,12 +122,11 @@ Route::namespace('User')->group(function () {
 | namespace: App\Http\Controllers\Admin
 |--------------------------------------------------------------------------
 */
-Route::prefix('admin')
-    ->namespace('Admin')
+Route::prefix('admin')->namespace('Admin')->as('admin.')
     ->group(function () {
 
         // 20. 管理者ダッシュボード
-        Route::get('/', 'AdminController@index')->name('admin.home');
+        Route::get('/', 'AdminController@index')->name('home');
 
         // ============================
         // 21. イベント管理
@@ -133,11 +137,11 @@ Route::prefix('admin')
 
         // 25. 非表示確認
         Route::post('events/{event}/hidden/confirm', 'EventController@hiddenConfirm')
-            ->name('admin.events.hidden.confirm');
+            ->name('events.hidden.confirm');
 
         // 26. 非表示完了
         Route::post('events/{event}/hidden/complete', 'EventController@hiddenComplete')
-            ->name('admin.events.hidden.complete');
+            ->name('events.hidden.complete');
 
         // ============================
         // 22. ユーザー管理
