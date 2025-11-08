@@ -4,7 +4,21 @@
 
 @section('content')
   <form action="{{ route('events.index') }}" method="GET" class="p-4 bg-light rounded">
-    <div class="d-flex gap-3 align-items-end flex-wrap">
+      {{-- ✅ 上部アクション行（検索クリア＋新規イベント） --}}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="m-0">イベント一覧</h2>
+
+      {{-- ✅ 主催者(role=2)のみ表示 --}}
+      @if(Auth::check() && Auth::user()->role == 0)
+        <a href="{{ route('host.events.create') }}" 
+          class="btn btn-success d-flex align-items-center"
+          style="gap:6px;">
+            <span style="font-size:18px;">＋</span> 新規イベント作成
+        </a>
+        @endif
+    </div>
+
+  <div class="d-flex gap-3 align-items-end flex-wrap">
       <div>
         <label>キーワード</label>
         <input type="text" name="keyword" class="form-control">

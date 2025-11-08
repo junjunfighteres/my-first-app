@@ -91,34 +91,34 @@ Route::middleware('auth')->group(function () {
     // ============================
     Route::prefix('host')->group(function () {
 
-        // 13. 主催イベント詳細
-        Route::get('events/{event}', 'EventController@hostShow')
-            ->name('host.events.show');
-
-        // 14. 編集
-        Route::get('events/{event}/edit', 'EventController@edit')
-            ->name('host.events.edit');
-
-        // 15. 編集内容確認
-        Route::post('events/confirm', 'EventController@updateConfirm')
-            ->name('host.events.update.confirm');
-
-        // 16. 更新完了
-        Route::post('events/complete', 'EventController@updateComplete')
-            ->name('host.events.update.complete');
-
-        // 17. 新規作成
+        // 13. 新規作成
         Route::get('events/create', 'EventController@create')
             ->name('host.events.create');
 
-        // 18. 新規登録確認
+        // 14. 新規登録確認
         Route::post('events/create/confirm', 'EventController@storeConfirm')
             ->name('host.events.store.confirm');
 
-        // 19. 新規登録完了
+        // 15. 新規登録完了
         Route::post('events/create/complete', 'EventController@storeComplete')
             ->name('host.events.store.complete');
 
+        // 16. 主催イベント詳細
+        Route::get('events/{event}', 'EventController@hostShow')
+            ->name('host.events.show');
+
+        // 17. 編集
+        Route::get('events/{event}/edit', 'EventController@edit')
+            ->name('host.events.edit');
+
+        // 18. 編集内容確認
+        Route::post('events/confirm', 'EventController@updateConfirm')
+            ->name('host.events.update.confirm');
+
+        // 19. 更新完了
+        Route::post('events/complete', 'EventController@updateComplete')
+            ->name('host.events.update.complete');
+            
     });
 });
 
