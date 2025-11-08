@@ -36,7 +36,16 @@ use App\Models\Bookmark;
 | namespace: App\Http\Controllers\User
 |--------------------------------------------------------------------------
 */
-Route::namespace('User')->group(function () {
+Route::get('/', function () {
+    return redirect()->route('login');
+});
+
+// Route::get('/home', function () {
+//     return redirect()->route('index'); // ここをあなたのメインページルート名に
+// })->name('home');
+
+Route::middleware('auth')->group(function () {
+    Route::namespace('User')->group(function () {
 
     // 7. 一般メインページ
     Route::get('/', 'DisplayController@index')->name('user.main');
@@ -52,14 +61,14 @@ Route::namespace('User')->group(function () {
     // ============================
     // 参加申込 Application
     // ============================
-    Route::get('applications/{event}/apply', 'ApplicationController@create')
-        ->name('applications.apply'); // 9. 申込画面
+    Route::get('events/{event}/apply', 'ApplicationController@applyForm')
+        ->name('events.apply'); // 9. 申込画面
 
-    Route::post('applications/confirm', 'ApplicationController@confirm')
-        ->name('applications.confirm'); // 10. 申込確認
+    Route::post('events/apply/confirm', 'ApplicationController@applyConfirm')
+        ->name('events.confirm'); // 10. 申込確認
 
-    Route::post('applications/complete', 'ApplicationController@complete')
-        ->name('applications.complete'); // 11. 完了画面
+    Route::post('events/apply/complete', 'ApplicationController@applyComplete')
+        ->name('events.complete'); // 11. 完了画面
 
     Route::resource('applications', 'ApplicationController')->only([
         'store'
@@ -114,7 +123,6 @@ Route::namespace('User')->group(function () {
 });
 
 
-
 /*
 |--------------------------------------------------------------------------
 | Admin（管理者向け）
@@ -165,7 +173,7 @@ Route::prefix('admin')->namespace('Admin')->as('admin.')
             ->name('admin.applications.observe');
 
     });
-
+});
 
 
 /*
@@ -182,3 +190,5 @@ Route::prefix('ajax')
             'index', 'store', 'destroy'
         ]);
     });
+
+Auth::routes();

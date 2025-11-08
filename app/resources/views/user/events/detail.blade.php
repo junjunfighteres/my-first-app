@@ -31,14 +31,14 @@
 
             {{-- アクションボタン --}}
             <div class="mt-4 flex flex-wrap gap-3">
-                <form action="{{ route('events.index', $event->id) }}" method="POST">
                     @csrf
+                    <a href="{{ route('events.apply', $event->id) }}">
+                        <button class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg">参加する</button>
+                    </a>
                     <form action="{{ route('events.index', ['event' => $event->id]) }}" method="GET">
-                        <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">参加する</button>
-                    </form>
                         <button class="bg-yellow-400 hover:bg-yellow-500 px-4 py-2 rounded-lg">ブックマーク</button>
-                    <button class="bg-red-400 hover:bg-red-500 px-4 py-2 rounded-lg">違反報告</button>
-                </form>
+                        <button class="bg-red-400 hover:bg-red-500 px-4 py-2 rounded-lg">違反報告</button>
+                    </form>
                 @if (Auth::check() && Auth::user()->role == 2)
                     <button class="bg-gray-400 hover:bg-gray-500 px-4 py-2 rounded-lg">非表示にする</button>
                 @endif
@@ -90,7 +90,7 @@
 
                 <h3 class="font-semibold mt-2">{{ $rel->title }}</h3>
             </div>
-        @endforeach
+            @endforeach
         </div>
     </div>
 

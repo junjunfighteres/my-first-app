@@ -1,16 +1,19 @@
 <?php
 
 namespace App\Models;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-use Illuminate\Database\Eloquent\Model;
-
-class User extends Model
+class User extends Authenticatable
 {
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
+
+    use Notifiable;
+    
     protected $table = 'users';
 
     protected $fillable = [
