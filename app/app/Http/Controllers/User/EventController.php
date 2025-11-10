@@ -184,7 +184,26 @@ class EventController extends Controller
      */
     public function storeComplete(Request $request)
     {
-        $data = $request->all();
+        $user = Auth::user();
+
+        // role=1（主催者）じゃなければ登録させない
+        if ($user->role != 1) {
+            return redirect()->route('events.index')
+                ->with('error', '主催者権限がありません。');
+        }
+
+        // バリデーション
+        $validated = $request->validate([
+            'title'       => 'required|string|max:255',
+            'date'        => 'required|date',
+            'start_time'  => 'required',
+            'end_time'    => 'required',
+            'format'      => 'required|string|max:100',
+            'capacity'    => 'required|integer|min:1',
+            'description' => 'nullable|string|max:2000',
+            'del_flg'     => 'nullable|boolean',
+        ]);
+
 
         // 画像を正式保管
         $finalImage = null;

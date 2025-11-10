@@ -118,7 +118,7 @@ Route::middleware('auth')->group(function () {
         // 19. 更新完了
         Route::post('events/complete', 'EventController@updateComplete')
             ->name('host.events.update.complete');
-            
+
     });
 });
 
@@ -181,14 +181,15 @@ Route::prefix('admin')->namespace('Admin')->as('admin.')
 | Ajax（API風 非同期処理）
 |--------------------------------------------------------------------------
 */
-Route::prefix('ajax')
-    ->namespace('Ajax')
-    ->group(function () {
+Route::prefix('ajax')->namespace('Ajax')->group(function () {
 
-        // ブックマーク Ajax用
-        Route::resource('bookmarks', 'BookmarkAjaxController')->only([
-            'index', 'store', 'destroy'
-        ]);
-    });
+    // ブックマーク Ajax用（indexでタブ切り替えも処理）
+    Route::resource('bookmarks', 'BookmarkAjaxController')->only([
+        'index', 'store', 'destroy'
+    ]);
+
+    // タブ切り替え専用（旧TabControllerは不要）
+    Route::get('tabs/{type}', 'BookmarkAjaxController@index');
+});
 
 Auth::routes();

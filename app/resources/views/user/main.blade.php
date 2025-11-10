@@ -57,11 +57,12 @@
         <a href="{{ route('events.index') }}" class="btn btn-secondary">クリア</a>
       </div>
     </div>
-    <div class="tabs">
-      <button class="tab" data-type="joined">参加済み</button>
-      <button class="tab" data-type="bookmarked">ブックマーク</button>
-      <button class="tab" data-type="hosted">主催イベント</button>
+    <div class="tabs my-3">
+      <a href="{{ route('events.index', ['type' => 'joined']) }}" class="btn btn-outline-primary">参加済み</a>
+      <a href="{{ route('events.index', ['type' => 'bookmarked']) }}" class="btn btn-outline-primary">ブックマーク</a>
+      <a href="{{ route('events.index', ['type' => 'hosted']) }}" class="btn btn-outline-primary">主催イベント</a>
     </div>
+
     <div id="event-list">
     @include('layouts.event_cards', ['events' => $events])
     </div>
