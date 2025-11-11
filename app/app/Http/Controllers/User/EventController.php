@@ -186,47 +186,47 @@ class EventController extends Controller
     {
         $user = Auth::user();
 
-        // role=1（主催者）じゃなければ登録させない
-        if ($user->role != 1) {
-            return redirect()->route('events.index')
-                ->with('error', '主催者権限がありません。');
-        }
+    // 🔹 一般ユーザー（role=0）も作成可能にする場合はコメントアウト
+    // if ($user->role != 1) {
+    //     return redirect()->route('events.index')
+    //         ->with('error', '主催者権限がありません。');
+    // }
 
-        // バリデーション
-        $validated = $request->validate([
-            'title'       => 'required|string|max:255',
-            'date'        => 'required|date',
-            'start_time'  => 'required',
-            'end_time'    => 'required',
-            'format'      => 'required|string|max:100',
-            'capacity'    => 'required|integer|min:1',
-            'description' => 'nullable|string|max:2000',
-            'del_flg'     => 'nullable|boolean',
-        ]);
+    // バリデーション
+    $validated = $request->validate([
+        'title'       => 'required|string|max:255',
+        'date'        => 'required|date',
+        'start_time'  => 'required',
+        'end_time'    => 'required',
+        'format'      => 'required|string|max:100',
+        'capacity'    => 'required|integer|min:1',
+        'status'      => 'required|string',
+        'description' => 'nullable|string|max:2000',
+        'image_path'  => 'nullable|string',
+    ]);
 
+    // 画像を正式フォルダに移動
+    $finalImage = null;
+    if (!empty($validated['image_path'])) {
+        $finalImage = str_replace('temp', 'events', $validated['image_path']);
+        \Storage::disk('public')->move($validated['image_path'], $finalImage);
+    }
 
-        // 画像を正式保管
-        $finalImage = null;
-        if (!empty($data['image_path'])) {
-            $finalImage = str_replace('temp', 'events', $data['image_path']);
-            \Storage::disk('public')->move($data['image_path'], $finalImage);
-        }
+    // DBに保存
+    $event = Event::create([
+        'user_id'     => $user->id,
+        'title'       => $validated['title'],
+        'date'        => $validated['date'],
+        'start_time'  => $validated['start_time'],
+        'end_time'    => $validated['end_time'],
+        'format'      => $validated['format'],
+        'capacity'    => $validated['capacity'],
+        'status'      => $validated['status'],
+        'description' => $validated['description'] ?? null,
+        'image_path'  => $finalImage,
+        'del_flg'     => 0,
+    ]);
 
-        // DB保存
-        $event = Event::create([
-            'user_id'     => Auth::id(),
-            'title'       => $data['title'],
-            'date'        => $data['date'],
-            'start_time'  => $data['start_time'],
-            'end_time'    => $data['end_time'],
-            'format'      => $data['format'],
-            'capacity'    => $data['capacity'],
-            'status'      => $data['status'],
-            'description' => $data['description'] ?? null,
-            'image_path'  => $finalImage,
-            'del_flg'     => 0
-        ]);
-
-        return view('user.host.create_complete', compact('event'));
+    return view('user.host.create_complete', compact('event'));
     }
 }

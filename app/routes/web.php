@@ -181,7 +181,7 @@ Route::prefix('admin')->namespace('Admin')->as('admin.')
 | Ajax（API風 非同期処理）
 |--------------------------------------------------------------------------
 */
-Route::prefix('ajax')->namespace('Ajax')->group(function () {
+Route::prefix('ajax')->namespace('Ajax')->middleware('auth')->group(function () {
 
     // ブックマーク Ajax用（indexでタブ切り替えも処理）
     Route::resource('bookmarks', 'BookmarkAjaxController')->only([
@@ -189,7 +189,7 @@ Route::prefix('ajax')->namespace('Ajax')->group(function () {
     ]);
 
     // タブ切り替え専用（旧TabControllerは不要）
-    Route::get('tabs/{type}', 'BookmarkAjaxController@index');
-});
+    Route::get('tabs/{type}', 'TabController@show');
+    });
 
 Auth::routes();

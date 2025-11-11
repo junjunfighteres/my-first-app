@@ -58,14 +58,14 @@
       </div>
     </div>
     <div class="tabs my-3">
-      <a href="{{ route('events.index', ['type' => 'joined']) }}" class="btn btn-outline-primary">参加済み</a>
-      <a href="{{ route('events.index', ['type' => 'bookmarked']) }}" class="btn btn-outline-primary">ブックマーク</a>
-      <a href="{{ route('events.index', ['type' => 'hosted']) }}" class="btn btn-outline-primary">主催イベント</a>
+      <button type="button" class="tab btn btn-outline-primary" data-type="joined">参加済み</button>
+      <button type="button" class="tab btn btn-outline-primary" data-type="bookmarked">ブックマーク</button>
+      <button type="button" class="tab btn btn-outline-primary" data-type="hosted">主催イベント</button>
     </div>
 
     <div id="event-list">
     @include('layouts.event_cards', ['events' => $events])
     </div>
   </form>
-@vite(['resources/js/tab.js'])
+<script src="/js/tab.js"></script>
 @endsection

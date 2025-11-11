@@ -1,45 +1,52 @@
-// ページのHTMLがすべて読み込まれてから実行
-document.addEventListener('DOMContentLoaded', () => {
-  // タブボタン（参加済み・ブックマーク・主催イベント）を取得
+console.log('tab.js loaded (start)');
+
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOMContentLoaded event fired');
+
   const tabs = document.querySelectorAll('.tab');
-  // イベント一覧を入れるコンテナ
   const eventList = document.getElementById('event-list');
+  const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-  // 安全対策
-  if (!tabs.length || !eventList) return;
+  console.log('tabs found:', tabs.length);
+  console.log('eventList found:', !!eventList);
 
-  // タブクリック時の処理
+  if (!tabs.length || !eventList) {
+    console.warn('タブまたはイベントリストが見つかりません');
+    return;
+  }
+
   tabs.forEach(tab => {
     tab.addEventListener('click', async (e) => {
       e.preventDefault();
-
-      // クリックされたタブタイプ（joined/bookmarked/hosted）
       const type = tab.dataset.type;
+      console.log(`clicked tab: ${type}`);
 
-      // activeクラス制御
+      // active クラス切り替え
       tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
 
-      // ローディング中表示
+      // ローディング表示
       eventList.innerHTML = '<p class="text-muted p-3">読み込み中...</p>';
 
       try {
-        // Ajaxルートにアクセス（例: /ajax/tabs/hosted）
         const response = await fetch(`/ajax/tabs/${type}`, {
-          headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        });
+          method: 'GET',
+          headers: { 'X-Requested-With': 'XMLHttpRequest',
+                     'X-CSRF-TOKEN': token
+      },
+      credentials: 'same-origin' // ← これでCookieも送られる
+      });
 
-        if (!response.ok) {
-          throw new Error('通信に失敗しました');
-        }
+        console.log('fetch done:', response.status);
 
-        // 取得したHTMLをそのまま反映
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const html = await response.text();
-        eventList.innerHTML = html;
-
-      } catch (error) {
-        console.error(error);
-        eventList.innerHTML = '<p class="text-danger p-3">データの取得に失敗しました。</p>';
+        eventList.innerHTML = html.trim()
+          ? html
+          : '<p class="text-muted p-3">イベントが見つかりません。</p>';
+      } catch (err) {
+        console.error('fetch error:', err);
+        eventList.innerHTML = '<p class="text-danger p-3">読み込み失敗</p>';
       }
     });
   });

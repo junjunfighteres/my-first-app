@@ -20,8 +20,10 @@ class Event extends Model
         'start_time', 
         'end_time', 
         'format', 
-        'capacity', 
+        'capacity',
+        'status',
         'description', 
+        'image_path',
         'del_flg',
     ];
 

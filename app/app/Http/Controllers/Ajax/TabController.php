@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Ajax;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Event;
 
@@ -13,41 +12,38 @@ class TabController extends Controller
     {
         $user = Auth::user();
 
-        // 未ログインの場合は空を返す
-        if (!$user) {
-            return response()->view('layouts.event_cards', ['events' => collect([])]);
-        }
-
         switch ($type) {
             case 'joined':
-                $events = Event::whereIn('id', function ($query) use ($user) {
-                    $query->select('event_id')
-                          ->from('applications')
-                          ->where('user_id', $user->id);
-                })->where('del_flg', 0)->get();
+                $events = $user->applications()
+                    ->with('event')
+                    ->whereHas('event', fn($q) => $q->where('del_flg', 0))
+                    ->get()
+                    ->pluck('event');
                 break;
 
             case 'bookmarked':
-                $events = Event::whereIn('id', function ($query) use ($user) {
-                    $query->select('event_id')
-                          ->from('bookmarks')
-                          ->where('user_id', $user->id);
-                })->where('del_flg', 0)->get();
+                $events = $user->bookmarks()
+                    ->with('event')
+                    ->whereHas('event', fn($q) => $q->where('del_flg', 0))
+                    ->get()
+                    ->pluck('event');
                 break;
 
             case 'hosted':
-                // 主催イベントはログインユーザーIDで絞る！
+                // ✅ 修正版：ログインユーザー自身が作成したイベントのみ
                 $events = Event::where('user_id', $user->id)
                     ->where('del_flg', 0)
+                    ->orderBy('date', 'desc')
                     ->get();
                 break;
 
             default:
-                $events = Event::where('del_flg', 0)->get();
-                break;
+                $events = Event::where('del_flg', 0)
+                    ->orderBy('date', 'desc')
+                    ->get();
         }
 
-        // 部分テンプレートを返す
+        // Bladeでイベントカードを描画
         return view('layouts.event_cards', compact('events'));
     }
 }
