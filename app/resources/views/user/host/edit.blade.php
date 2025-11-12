@@ -71,7 +71,7 @@
 
         <div class="flex justify-between mt-6">
             <a href="{{ route('host.events.show', $event->id) }}" class="text-blue-600 hover:underline">キャンセル</a>
-            <button class="px-4 py-2 bg-blue-600 text-white rounded">確認する</button>
+            <button class="px-4 py-2 bg-blue-600 text-black rounded">確認する</button>
         </div>
 
     </form>

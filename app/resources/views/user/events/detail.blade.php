@@ -31,18 +31,41 @@
 
             {{-- アクションボタン --}}
             <div class="mt-4 flex flex-wrap gap-3">
-                    @csrf
-                    <a href="{{ route('events.apply', $event->id) }}">
-                        <button class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg">参加する</button>
+
+            {{-- 一般ユーザー用（role = 0） --}}
+            @if (Auth::check() && Auth::user()->role == 0 && Auth::id() !== $event->user_id)
+                <a href="{{ route('events.apply', $event->id) }}" class="inline-block">
+                    <button type="button" class="bg-blue-500 hover:bg-blue-600 text-black px-4 py-2 rounded-lg">
+                        参加する
+                    </button>
+                </a>
+
+                <form action="{{ route('events.index', ['event' => $event->id]) }}" method="GET" class="inline-block">
+                    <button type="button" class="bg-yellow-400 hover:bg-yellow-500 px-4 py-2 rounded-lg">
+                        ブックマーク
+                    </button>
+                    <a href="{{ route('report.create', $event->id) }}" class="ml-2 bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded-lg inline-block">
+                        違反報告
                     </a>
-                    <form action="{{ route('events.index', ['event' => $event->id]) }}" method="GET">
-                        <button class="bg-yellow-400 hover:bg-yellow-500 px-4 py-2 rounded-lg">ブックマーク</button>
-                        <button class="bg-red-400 hover:bg-red-500 px-4 py-2 rounded-lg">違反報告</button>
-                    </form>
-                @if (Auth::check() && Auth::user()->role == 2)
-                    <button class="bg-gray-400 hover:bg-gray-500 px-4 py-2 rounded-lg">非表示にする</button>
-                @endif
-            </div>
+                </form>
+            @endif
+
+            {{-- 主催者用（role = 0） --}}
+            @if (Auth::check() && Auth::user()->role == 0 && Auth::id() === $event->user_id)
+                <a href="{{ route('host.events.edit', $event->id) }}" class="inline-block">
+                    <button type="button" class="bg-green-500 hover:bg-green-600 text-black px-4 py-2 rounded-lg">
+                        編集する
+                    </button>
+                </a>
+            @endif
+
+            {{-- 管理者用（role = 2） --}}
+         
+            @if (Auth::check() && Auth::user()->role == 2)
+                <button type="button" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">
+                    非表示にする
+                </button>
+            @endif
         </div>
     </div>
 

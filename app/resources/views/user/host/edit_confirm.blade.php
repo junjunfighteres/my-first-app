@@ -37,7 +37,7 @@
 
         <div class="flex justify-between">
             <a href="{{ url()->previous() }}" class="text-blue-600 hover:underline">訂正する</a>
-            <button class="px-4 py-2 bg-blue-600 text-white rounded">更新する</button>
+            <button class="px-4 py-2 bg-blue-600 text-black rounded">更新する</button>
         </div>
     </form>
 
