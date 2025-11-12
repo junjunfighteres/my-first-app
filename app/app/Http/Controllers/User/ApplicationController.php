@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Ajax;
+namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -95,7 +95,11 @@ class ApplicationController extends Controller
 
         $user = Auth::user(); // 未ログインなら null（後でauth必須にするならミドルウェアで）
 
-        return view('user.applications.apply', compact('event', 'user'));
+        $isJoined = Application::where('user_id', $user->id)
+            ->where('event_id', $event->id)
+            ->exists();
+
+        return view('user.applications.apply', compact('event', 'user', 'isJoined'));
     }
 
     // ② 確認画面
@@ -149,5 +153,20 @@ class ApplicationController extends Controller
             'event'   => $event,
             'comment' => $validated['comment'] ?? '',
         ]);
+    }
+
+    /**
+     * 参加キャンセル処理
+     */
+    public function cancel(Event $event)
+    {
+        $user = Auth::user();
+
+        Application::where('user_id', $user->id)
+            ->where('event_id', $event->id)
+            ->delete();
+
+        return redirect()->route('events.show', $event->id)
+            ->with('success', 'イベントの参加をキャンセルしました。');
     }
 }

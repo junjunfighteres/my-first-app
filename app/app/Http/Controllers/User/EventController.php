@@ -4,8 +4,9 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Event;
+use App\Models\Application;
 
 class EventController extends Controller
 {
@@ -78,7 +79,11 @@ class EventController extends Controller
             ->limit(6)
             ->get();
 
-        return view('user.events.detail', compact('event', 'related'));
+        $isJoined = Auth::check() && Application::where('user_id', Auth::id())
+            ->where('event_id', $event->id)
+            ->exists();
+
+        return view('user.events.detail', compact('event', 'related', 'isJoined'));
     }
 
 

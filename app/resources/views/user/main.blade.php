@@ -27,9 +27,9 @@
       <div>
         <label>開催日</label>
         <div class="d-flex align-items-center">
-          <input type="date" name="start_date" class="form-control" value="{{ request('keyword') }}">
+          <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
           <span class="mx-2">〜</span>
-          <input type="date" name="end_date" class="form-control" value="{{ request('keyword') }}">
+          <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
         </div>
       </div>
 

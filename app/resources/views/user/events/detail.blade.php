@@ -35,8 +35,8 @@
             {{-- 一般ユーザー用（role = 0） --}}
             @if (Auth::check() && Auth::user()->role == 0 && Auth::id() !== $event->user_id)
                 <a href="{{ route('events.apply', $event->id) }}" class="inline-block">
-                    <button type="button" class="bg-blue-500 hover:bg-blue-600 text-black px-4 py-2 rounded-lg">
-                        参加する
+                    <button id="apply-btn-{{ $event->id }}" data-event-id="{{ $event->id }}" class="bg-blue-500 hover:bg-blue-600 text-black px-4 py-2 rounded-lg">
+                        {{ $isJoined ? '参加をキャンセル' : '参加する' }}
                     </button>
                 </a>
 
