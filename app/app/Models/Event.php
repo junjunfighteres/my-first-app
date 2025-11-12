@@ -21,6 +21,7 @@ class Event extends Model
         'end_time', 
         'format', 
         'capacity',
+        'status', 
         'status',
         'description', 
         'image_path',

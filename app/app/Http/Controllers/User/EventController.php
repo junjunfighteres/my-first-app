@@ -128,6 +128,7 @@ class EventController extends Controller
             'end_time'    => $data['end_time'],
             'format'      => $data['format'],
             'capacity'    => $data['capacity'],
+            'status' => 'required|string|in:public,private',
             'status'      => $data['status'],
             'description' => $data['description'],
             'image_path'  => $finalImage,
