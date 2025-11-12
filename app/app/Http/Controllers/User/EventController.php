@@ -14,9 +14,35 @@ class EventController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::all();
+        // 基本条件（削除されていないイベント）
+        $query = Event::where('del_flg', 0);
+
+        // 🔍 キーワード検索（タイトル or 説明）
+        if ($request->filled('keyword')) {
+            $keyword = $request->input('keyword');
+            $query->where(function($q) use ($keyword) {
+                $q->where('title', 'like', "%{$keyword}%")
+                  ->orWhere('description', 'like', "%{$keyword}%");
+            });
+        }
+
+        // 📅 日付検索
+        if ($request->filled('start_date')) {
+            $query->where('date', '>=', $request->input('start_date'));
+        }
+        if ($request->filled('end_date')) {
+            $query->where('date', '<=', $request->input('end_date'));
+        }
+
+        // 💻 開催形式（Twitch / YouTube）
+        if ($request->filled('platform')) {
+            $query->where('format', $request->input('platform'));
+        }
+
+        // デフォルトは全イベント表示
+        $events = $query->orderBy('date', 'asc')->get();
 
         return view('user.main', compact('events'));
     }
@@ -144,7 +170,18 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
-        //
+        // 権限チェック（主催者本人のみ）
+        if (Auth::id() !== $event->user_id) {
+            abort(403, 'このイベントを削除する権限がありません。');
+        }
+
+        // 実際の削除処理（物理削除 or 論理削除）
+        // 論理削除を使いたいなら下をコメントアウトして del_flg を更新する形でもOK
+        // $event->delete();
+        $event->update(['del_flg' => 1]);
+
+        // メッセージ付きで一覧にリダイレクト
+        return redirect()->route('events.index')->with('success', 'イベントを削除しました。');
     }
 
     //新規イベント作成画面表示

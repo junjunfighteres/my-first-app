@@ -104,7 +104,7 @@ Route::middleware('auth')->group(function () {
             ->name('host.events.store.complete');
 
         // 16. 主催イベント詳細
-        Route::get('events/{event}', 'EventController@hostShow')
+        Route::get('events/{event}', 'EventController@Show')
             ->name('host.events.show');
 
         // 17. 編集
@@ -119,6 +119,9 @@ Route::middleware('auth')->group(function () {
         Route::post('events/complete', 'EventController@updateComplete')
             ->name('host.events.update.complete');
 
+        // 20. 削除
+        Route::delete('events/{event}', 'EventController@destroy')
+            ->name('host.events.destroy');
     });
 });
 
@@ -184,9 +187,9 @@ Route::prefix('admin')->namespace('Admin')->as('admin.')
 Route::prefix('ajax')->namespace('Ajax')->middleware('auth')->group(function () {
 
     // ブックマーク Ajax用（indexでタブ切り替えも処理）
-    Route::resource('bookmarks', 'BookmarkAjaxController')->only([
-        'index', 'store', 'destroy'
-    ]);
+    Route::get('bookmarks', 'BookmarkAjaxController@index')->name('ajax.bookmarks.index');
+    Route::post('bookmarks', 'BookmarkAjaxController@store')->name('ajax.bookmarks.store');
+    Route::delete('bookmarks/{event}', 'BookmarkAjaxController@destroy')->name('ajax.bookmarks.destroy');
 
     // タブ切り替え専用（旧TabControllerは不要）
     Route::get('tabs/{type}', 'TabController@show');

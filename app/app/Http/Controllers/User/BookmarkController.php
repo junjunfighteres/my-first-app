@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\User;
+namespace App\Http\Controllers\Ajax;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Event;
 use App\Models\Bookmark;
 
 class BookmarkController extends Controller
@@ -15,9 +17,8 @@ class BookmarkController extends Controller
      */
     public function index()
     {
-        $bookmarks = Bookmark::all();
-
-        return view('bookmarks.index', compact('bookmarks'));
+        $bookmarks = Bookmark::where('user_id', Auth::id())->pluck('event_id');
+        return response()->json($bookmarks);
     }
 
     /**
@@ -38,7 +39,14 @@ class BookmarkController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $eventId = $request->input('event_id');
+
+        Bookmark::firstOrCreate([
+            'user_id' => Auth::id(),
+            'event_id' => $eventId,
+        ]);
+
+        return response()->json(['status' => 'bookmarked']);
     }
 
     /**
@@ -81,8 +89,12 @@ class BookmarkController extends Controller
      * @param  \App\Bookmark  $bookmark
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Bookmark $bookmark)
+    public function destroy($eventId)
     {
-        //
+        Bookmark::where('user_id', Auth::id())
+            ->where('event_id', $eventId)
+            ->delete();
+
+        return response()->json(['status' => 'unbookmarked']);
     }
 }

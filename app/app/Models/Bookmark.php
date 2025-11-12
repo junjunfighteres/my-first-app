@@ -14,7 +14,8 @@ class Bookmark extends Model
     protected $table = 'bookmarks';
 
     protected $fillable = [
-        'user_id', 'event_id',
+        'user_id', 
+        'event_id',
     ];
 
     public $timestamps = true;

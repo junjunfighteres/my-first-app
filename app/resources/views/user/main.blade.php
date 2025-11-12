@@ -8,7 +8,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="m-0">イベント一覧</h2>
 
-      {{-- ✅ 主催者(role=2)のみ表示 --}}
+      {{-- ✅ 主催者(role=0)のみ表示 --}}
       @if(Auth::check() && Auth::user()->role == 0)
         <a href="{{ route('host.events.create') }}" 
           class="btn btn-success d-flex align-items-center"
@@ -21,15 +21,15 @@
   <div class="d-flex gap-3 align-items-end flex-wrap">
       <div>
         <label>キーワード</label>
-        <input type="text" name="keyword" class="form-control">
+        <input type="text" name="keyword" class="form-control" value="{{ request('keyword') }}">
       </div>
 
       <div>
         <label>開催日</label>
         <div class="d-flex align-items-center">
-          <input type="date" name="start_date" class="form-control">
+          <input type="date" name="start_date" class="form-control" value="{{ request('keyword') }}">
           <span class="mx-2">〜</span>
-          <input type="date" name="end_date" class="form-control">
+          <input type="date" name="end_date" class="form-control" value="{{ request('keyword') }}">
         </div>
       </div>
 
@@ -37,8 +37,8 @@
         <label>配信形式</label>
         <select name="platform" class="form-select">
           <option value="">すべて</option>
-          <option value="twitch">Twitch</option>
-          <option value="youtube">YouTube</option>
+          <option value="twitch" {{ request('platform') == 'twitch' ? 'selected' : '' }}>Twitch</option>
+          <option value="youtube" {{ request('platform') == 'youtube' ? 'selected' : '' }}>YouTube</option>
         </select>
       </div>
 
@@ -46,9 +46,9 @@
         <summary>詳細検索</summary>
         <div class="d-flex mt-2 align-items-center">
           <label class="me-2">時間</label>
-          <input type="time" name="start_time" class="form-control">
+          <input type="time" name="start_time" class="form-control" value="{{ request('keyword') }}">
           <span class="mx-2">〜</span>
-          <input type="time" name="end_time" class="form-control">
+          <input type="time" name="end_time" class="form-control" value="{{ request('keyword') }}">
         </div>
       </details>
 
@@ -58,9 +58,10 @@
       </div>
     </div>
     <div class="tabs my-3">
-      <button type="button" class="tab btn btn-outline-primary" data-type="joined">参加済み</button>
-      <button type="button" class="tab btn btn-outline-primary" data-type="bookmarked">ブックマーク</button>
-      <button type="button" class="tab btn btn-outline-primary" data-type="hosted">主催イベント</button>
+      <button class="tab active" data-type="all">全イベント</button>
+      <button class="tab" data-type="joined">参加済み</button>
+      <button class="tab" data-type="bookmarked">ブックマーク</button>
+      <button class="tab" data-type="hosted">主催イベント</button>
     </div>
 
     <div id="event-list">

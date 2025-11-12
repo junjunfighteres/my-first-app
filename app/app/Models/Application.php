@@ -11,10 +11,12 @@ class Application extends Model
      *
      * @var array
      */
-    protected $table = 'reports';
+    protected $table = 'applications';
 
     protected $fillable = [
-        'user_id', 'event_id', 'comment',
+        'user_id', 
+        'event_id', 
+        'comment',
     ];
 
     public $timestamps = true;

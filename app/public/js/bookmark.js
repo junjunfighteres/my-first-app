@@ -81,15 +81,15 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./resources/js/tab.js":
-/*!*****************************!*\
-  !*** ./resources/js/tab.js ***!
-  \*****************************/
+/***/ "./resources/js/bookmark.js":
+/*!**********************************!*\
+  !*** ./resources/js/bookmark.js ***!
+  \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -97,68 +97,64 @@ function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present,
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-console.log('tab.js loaded (start)');
 document.addEventListener('DOMContentLoaded', function () {
-  console.log('DOMContentLoaded event fired');
-  var tabs = document.querySelectorAll('.tab');
-  var eventList = document.getElementById('event-list');
+  console.log('bookmark.js loaded');
+  var buttons = document.querySelectorAll('[id^="bookmark-btn"]');
   var token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-  console.log('tabs found:', tabs.length);
-  console.log('eventList found:', !!eventList);
-  if (!tabs.length || !eventList) {
-    console.warn('タブまたはイベントリストが見つかりません');
-    return;
-  }
-  tabs.forEach(function (tab) {
-    tab.addEventListener('click', /*#__PURE__*/function () {
+  console.log('bookmark buttons found:', buttons.length);
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', /*#__PURE__*/function () {
       var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(e) {
-        var type, response, html, _t;
+        var eventId, isBookmarked, url, method, res, data, _t;
         return _regenerator().w(function (_context) {
           while (1) switch (_context.p = _context.n) {
             case 0:
               e.preventDefault();
-              type = tab.dataset.type;
-              console.log("clicked tab: ".concat(type));
-
-              // active クラス切り替え
-              tabs.forEach(function (t) {
-                return t.classList.remove('active');
-              });
-              tab.classList.add('active');
-
-              // ローディング表示
-              eventList.innerHTML = '<p class="text-muted p-3">読み込み中...</p>';
+              eventId = btn.dataset.eventId;
+              isBookmarked = btn.classList.contains('bookmarked');
+              console.log("clicked bookmark button for event ".concat(eventId, ", current state: ").concat(isBookmarked ? 'bookmarked' : 'unbookmarked'));
               _context.p = 1;
+              url = isBookmarked ? "/ajax/bookmarks/".concat(eventId) : "/ajax/bookmarks";
+              method = isBookmarked ? 'DELETE' : 'POST';
               _context.n = 2;
-              return fetch("/ajax/tabs/".concat(type), {
-                method: 'GET',
+              return fetch(url, {
+                // ← ここでurlを使う！
+                method: method,
                 headers: {
-                  'X-Requested-With': 'XMLHttpRequest',
+                  'Content-Type': 'application/json',
                   'X-CSRF-TOKEN': token
                 },
-                credentials: 'same-origin' // ← これでCookieも送られる
+                body: JSON.stringify({
+                  event_id: eventId
+                })
               });
             case 2:
-              response = _context.v;
-              console.log('fetch done:', response.status);
-              if (response.ok) {
+              res = _context.v;
+              console.log('fetch done:', res.status);
+              if (res.ok) {
                 _context.n = 3;
                 break;
               }
-              throw new Error("HTTP ".concat(response.status));
+              throw new Error("HTTP ".concat(res.status));
             case 3:
               _context.n = 4;
-              return response.text();
+              return res.json();
             case 4:
-              html = _context.v;
-              eventList.innerHTML = html.trim() ? html : '<p class="text-muted p-3">イベントが見つかりません。</p>';
+              data = _context.v;
+              // 見た目更新
+              if (data.status === 'bookmarked') {
+                btn.classList.add('bookmarked');
+                btn.textContent = '★ ブックマーク中';
+              } else if (data.status === 'unbookmarked') {
+                btn.classList.remove('bookmarked');
+                btn.textContent = '☆ ブックマーク';
+              }
               _context.n = 6;
               break;
             case 5:
               _context.p = 5;
               _t = _context.v;
               console.error('fetch error:', _t);
-              eventList.innerHTML = '<p class="text-danger p-3">読み込み失敗</p>';
             case 6:
               return _context.a(2);
           }
@@ -173,14 +169,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 /***/ }),
 
-/***/ 1:
-/*!***********************************!*\
-  !*** multi ./resources/js/tab.js ***!
-  \***********************************/
+/***/ 2:
+/*!****************************************!*\
+  !*** multi ./resources/js/bookmark.js ***!
+  \****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /var/www/html/resources/js/tab.js */"./resources/js/tab.js");
+module.exports = __webpack_require__(/*! /var/www/html/resources/js/bookmark.js */"./resources/js/bookmark.js");
 
 
 /***/ })

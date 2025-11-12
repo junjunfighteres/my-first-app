@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Ajax;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Event;
+use App\Models\Application;
+use App\Models\Bookmark;
 
 class TabController extends Controller
 {
@@ -13,23 +15,17 @@ class TabController extends Controller
         $user = Auth::user();
 
         switch ($type) {
-            case 'joined':
-                $events = $user->applications()
-                    ->with('event')
-                    ->whereHas('event', fn($q) => $q->where('del_flg', 0))
-                    ->get()
-                    ->pluck('event');
+            case 'joined': // 参加済みイベント
+                $eventIds = Application::where('user_id', $user->id)->pluck('event_id');
+                $events = Event::whereIn('id', $eventIds)->where('del_flg', 0)->get();
                 break;
 
-            case 'bookmarked':
-                $events = $user->bookmarks()
-                    ->with('event')
-                    ->whereHas('event', fn($q) => $q->where('del_flg', 0))
-                    ->get()
-                    ->pluck('event');
+            case 'bookmarked': // ブックマークしたイベント
+                $eventIds = Bookmark::where('user_id', $user->id)->pluck('event_id');
+                $events = Event::whereIn('id', $eventIds)->where('del_flg', 0)->get();
                 break;
 
-            case 'hosted':
+            case 'hosted': // 主催イベント
                 // ✅ 修正版：ログインユーザー自身が作成したイベントのみ
                 $events = Event::where('user_id', $user->id)
                     ->where('del_flg', 0)
@@ -38,9 +34,8 @@ class TabController extends Controller
                 break;
 
             default:
-                $events = Event::where('del_flg', 0)
-                    ->orderBy('date', 'desc')
-                    ->get();
+                $events = Event::where('del_flg', 0)->get();
+                break;
         }
 
         // Bladeでイベントカードを描画

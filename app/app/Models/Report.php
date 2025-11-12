@@ -14,7 +14,9 @@ class Report extends Model
     protected $table = 'reports';
 
     protected $fillable = [
-        'user_id', 'event_id', 'comment',
+        'user_id', 
+        'event_id', 
+        'comment',
     ];
 
     public $timestamps = true;
