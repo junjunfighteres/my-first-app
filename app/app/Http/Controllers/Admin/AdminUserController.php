@@ -12,40 +12,47 @@ class AdminUserController extends Controller
      * 一覧表示
      */
     public function index(Request $request)
-    {
-        $keyword = $request->input('keyword');
+{
+    $keyword = $request->input('keyword');
 
-        $users = User::where('role', '!=', 2) // 管理者自身以外
-            ->when($keyword, function ($q) use ($keyword) {
-                $q->where('name', 'LIKE', "%$keyword%")
-                  ->orWhere('email', 'LIKE', "%$keyword%");
-            })
-            ->where('del_flg', 0)
-            ->orderBy('updated_at', 'desc')
-            ->paginate(20);
+    $base = User::query()
+        ->where('role', '!=', 2)
+        ->where('del_flg', 0)
 
-        return view('admin.users.index', compact('users', 'keyword'));
-    }
+        // ① まずイベント数（必ず最初に）
+        ->withCount('events')
 
-    /**
-     * 利用停止確認画面
-     */
-    public function suspendConfirm(User $user)
-    {
-        return view('admin.users.suspend_confirm', compact('user'));
-    }
+        // 🔍 検索
+        ->when($keyword, function ($q) use ($keyword) {
+            $q->where(function ($sub) use ($keyword) {
+                $sub->where('name', 'LIKE', "%$keyword%")
+                    ->orWhere('email', 'LIKE', "%$keyword%");
+            });
+        });
 
-    /**
-     * 利用停止処理
-     */
-    public function suspendComplete(Request $request, User $user)
-    {
-        // del_flg = 1 に変更
-        $user->update([
-            'del_flg' => 1
-        ]);
+    // ② total_reports_count を安全に取得
+    $base->addSelect([
+        'total_reports_count' => DB::table('events')
+            ->leftJoin('reports', 'reports.event_id', '=', 'events.id')
+            ->selectRaw('COUNT(reports.id)')
+            ->whereColumn('events.user_id', 'users.id')
+            ->groupBy('events.user_id')
+    ]);
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'ユーザーを利用停止にしました。');
-    }
+    // ③ 違反率
+    $base->addSelect(DB::raw("
+        CASE 
+            WHEN events_count = 0 THEN 0
+            ELSE total_reports_count / events_count
+        END AS violation_rate
+    "));
+
+    // ④ 並び順
+    $users = $base
+        ->orderByDesc('violation_rate')
+        ->orderByDesc('updated_at')
+        ->paginate(20);
+
+    return view('admin.users.index', compact('users', 'keyword'));
+}
 }

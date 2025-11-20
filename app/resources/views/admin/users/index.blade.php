@@ -21,7 +21,11 @@
                 <th>ID</th>
                 <th>名前</th>
                 <th>メール</th>
-                <th>状態</th>
+                <th>違反率</th>
+                <th>イベント数</th>
+                <th>違反総数</th>
+                <th>公開状態</th>
+                <th>イベント削除</th>
                 <th>最終更新</th>
                 <th>操作</th>
             </tr>
@@ -33,7 +37,15 @@
                     <td>{{ $user->id }}</td>
                     <td>{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
+                    <td>{{ $user->events_count }}</td>
+                    <td>{{ $user->total_reports_count }}</td>
+                    <td>{{ number_format($user->violation_rate, 2) }}</td>
                     <td>{{ $user->del_flg == 0 ? '利用可' : '停止中' }}</td>
+                    <td>@switch($user->status)
+                            @case('active') 利用中 @break
+                            @case('suspended') 停止中 @break
+                            @default 不明
+                        @endswitch</td>
                     <td>{{ $user->updated_at }}</td>
                     <td>
                         {{-- 利用停止ボタン --}}

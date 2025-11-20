@@ -22,6 +22,8 @@
                 <th>違反数</th>
                 <th>参加人数</th>
                 <th>最終更新</th>
+                <th>公開状態</th>
+                <th>イベント削除</th>
                 <th>操作</th>
             </tr>
         </thead>
@@ -35,6 +37,18 @@
                     <td>{{ $event->reports_count }}</td>
                     <td>{{ $event->applications_count }}</td>
                     <td>{{ $event->updated_at }}</td>
+                    <td>@switch($event->status)
+                        @case('public')
+                            公開
+                            @break
+                        @case('private')
+                            非公開
+                            @break
+                        @case('hidden')
+                            管理非公開
+                            @break
+                        @endswitch</td>
+                    <td>{{ $event->del_flg == 0 ? '通常' : '削除済' }}</td>
                     <td>
                         <a href="{{ route('admin.events.show', $event->id) }}" class="btn btn-info btn-sm">
                             詳細

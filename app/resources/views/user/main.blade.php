@@ -8,6 +8,14 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="m-0">イベント一覧</h2>
 
+      {{-- 🔗 プロフィールへ --}}
+      <a href="{{ route('user.profile', Auth::id()) }}"
+          class="btn btn-outline-primary d-flex align-items-center me-2"
+          style="gap:6px;">
+        <i class="bi bi-person-circle" style="font-size:18px;"></i>
+          プロフィール
+      </a>
+
       {{-- ✅ 主催者(role=0)のみ表示 --}}
       @if(Auth::check() && Auth::user()->role == 0)
         <a href="{{ route('host.events.create') }}" 
