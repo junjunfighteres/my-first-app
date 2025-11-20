@@ -44,8 +44,8 @@
         </div>
 
         <div class="mb-4">
-            <label>イベント画像</label><br>
-            <input type="file" name="image">
+            <label class="mt-3">イベント画像</label>
+            <input type="file" name="image" class="form-control" accept="image/*">
         </div>
 
         <div class="mb-4">

@@ -11,23 +11,35 @@
     {{-- イベント概要 --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-b pb-6 mb-6">
         <div>
-            <!-- <img src="{{ $event->image_url ?? '/images/default_event.png' }}"  -->
-                 alt="イベント画像" 
-                 class="w-full rounded-lg shadow">
+            @if (!empty($event->image_path))
+                <img src="{{ asset('storage/' . $event->image_path) }}"
+                    alt="イベント画像"
+                    class="w-full rounded-lg shadow">
+            @else
+                <div class="w-full h-40 bg-gray-200 flex items-center justify-center text-gray-500">
+                    画像なし
+                </div>
+            @endif
         </div>
         <div>
             <h1 class="text-2xl font-bold mb-2">{{ $event->title }}</h1>
+            {{-- 🔒 主催者だけ見える非公開ラベル --}}
+            @if ($event->status === 'private' && Auth::id() === $event->user_id)
+            <span class="inline-block bg-red-500 text-black px-3 py-1 rounded-full text-sm mb-3">
+            🔒 非公開イベント（自分だけ見えます）
+            </span>
+            @endif
             <p class="text-gray-700 mb-2">
                 主催者：
-                <a href="{{ route('events.index', ['id' => $event->organizer_id]) }}" 
-                   class="text-blue-600 hover:underline">
-                   {{ $event->organizer_name }}
+                <a href="{{ route('events.index', ['user' => $event->user_id]) }}" 
+                    class="text-blue-600 hover:underline">
+                    {{ $event->user->name }}
                 </a>
             </p>
             <p>開催日：{{ $event->start_date }} {{ $event->start_time }}〜{{ $event->end_time }}</p>
             <p>配信形式：{{ $event->format }}</p>
             <p>定員：{{ $event->capacity }}名</p>
-            <p>現在参加数：{{ $event->participants_count }}人</p>
+            <p>現在参加数：{{ $event->applications_count ?? 0 }}人</p>
 
             {{-- アクションボタン --}}
             <div class="mt-4 flex flex-wrap gap-3">
@@ -41,28 +53,34 @@
                 </a>
 
                 {{-- ブックマークボタン --}}
-                <button id="bookmark-btn-{{ $event->id }}"data-event-id="{{ $event->id }}"class="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 rounded-lg">
-                    ☆ ブックマーク
+                <button 
+                    id="bookmark-btn-{{ $event->id }}"
+                    data-event-id="{{ $event->id }}"
+                    class="px-4 py-2 rounded-lg text-black
+                        {{ $isBookmarked ? 'bg-yellow-500' : 'bg-yellow-400' }}">
+                        {{ $isBookmarked ? '★ ブックマーク中' : '☆ ブックマーク' }}
                 </button>
 
                 {{-- 違反報告 --}}
-                <a href="{{ route('report.create', $event->id) }}" class="ml-2 bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded-lg inline-block">
-                    違反報告
+                <a href="{{ route('report.create', $event->id) }}" 
+                    class="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 rounded-lg">
+                        違反報告
                 </a>
             @endif
 
             {{-- 主催者用（role = 0） --}}
             @if (Auth::check() && Auth::user()->role == 0 && Auth::id() === $event->user_id)
-                <div class="flex gap-3">
+                <div class="flex flex-row gap-4 items-center justify-start">
+
                     {{-- 編集ボタン --}}
-                        <a href="{{ route('host.events.edit', $event->id) }}" class="inline-block">
-                            <button type="button" class="bg-green-500 hover:bg-green-600 text-black px-4 py-2 rounded-lg">
+                    <a href="{{ route('host.events.edit', $event->id) }}" class="inline-block">
+                        <button type="button" class="bg-green-500 hover:bg-green-600 text-black px-4 py-2 rounded-lg">
                             編集する
-                            </button>
-                        </a>
+                        </button>
+                    </a>
 
                     {{-- 削除ボタン --}}
-                    <form action="{{ route('host.events.destroy', $event->id) }}" method="POST" 
+                    <form action="{{ route('host.events.destroy', $event->id) }}" method="POST"
                         onsubmit="return confirm('本当にこのイベントを削除しますか？');">
                         @csrf
                         @method('DELETE')
@@ -70,6 +88,7 @@
                             削除する
                         </button>
                     </form>
+
                 </div>
             @endif
 
@@ -96,17 +115,22 @@
         </div>
     </div>
 
-    {{-- コメント欄 --}}
+    {{-- コメント一覧 --}}
     <div class="mb-6">
-        <h2 class="text-xl font-semibold mb-2">💬 コメント欄</h2>
-        <form action="{{ route('events.index', $event->id) }}" method="POST" class="mb-4">
-            @csrf
-            <div class="flex gap-2">
-                <input type="text" name="comment" placeholder="コメントを入力..." 
-                       class="flex-1 border rounded-lg p-2">
-                <button class="bg-blue-500 text-white px-4 py-2 rounded-lg">送信</button>
+        <h2 class="text-xl font-semibold mb-2">💬 参加者コメント一覧</h2>
+
+        @if ($comments->count() > 0)
+            <div class="space-y-3">
+                @foreach ($comments as $c)
+                    <div class="border p-3 rounded-lg">
+                        <p class="font-semibold">{{ $c->user->name }} さんより</p>
+                        <p class="text-gray-700 mt-1">{{ $c->comment }}</p>
+                    </div>
+                @endforeach
             </div>
-        </form>
+        @else
+            <p class="text-gray-500">コメントはまだありません。</p>
+        @endif
     </div>
 
     {{-- 関連イベント --}}

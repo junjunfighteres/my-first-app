@@ -22,6 +22,8 @@ class User extends Authenticatable
         'password', 
         'role', 
         'del_flg',
+        'avatar_path',
+        'self_introduction',
     ];
 
     public $timestamps = true;
@@ -43,4 +45,25 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function events()
+    {
+        return $this->hasMany(Event::class, 'user_id');
+    }
+
+    public function applications()
+    {
+        return $this->hasMany(Application::class);
+    }
+
+    public function joinedEvents()
+    {
+        return $this->belongsToMany(
+            Event::class,
+            'applications',
+            'user_id',
+            'event_id'
+        );
+    }
+    
 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+use App\Models\Bookmark;
 
 use Illuminate\Database\Eloquent\Model;
 

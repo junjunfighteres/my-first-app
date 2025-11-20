@@ -10,40 +10,75 @@ use App\Models\Event;
 class DisplayController extends Controller
 {
     public function index(Request $request)
-    {
-        $user = Auth::user();
-        $type = $request->query('type', 'all');
+{
+    $user = Auth::user();
+    $type = $request->query('type', 'all');
+    $keyword = $request->input('keyword');
+    $startDate = $request->input('start_date');
+    $endDate = $request->input('end_date');
+    $platform = $request->input('platform');
 
-        if ($type === 'joined') {
-            // 参加済みイベント
-            $events = Event::whereIn('id', function ($query) use ($user) {
-                $query->select('event_id')
-                      ->from('applications')
-                      ->where('user_id', $user->id);
-            })->where('del_flg', 0)->get();
+    // 🌟 ベースクエリ（ここで非公開除外を必ず適用！）
+    $query = Event::query()
+        ->where('del_flg', 0)
+        ->with('user')
+        ->where(function ($q) use ($user) {
+            $q->where('status', 'public')
+              ->orWhere('user_id', $user->id);   // ← 自分の非公開イベントは表示OK
+        });
 
-        } elseif ($type === 'bookmarked') {
-            // ブックマークしたイベント
-            $events = Event::whereIn('id', function ($query) use ($user) {
-                $query->select('event_id')
-                      ->from('bookmarks')
-                      ->where('user_id', $user->id);
-            })->where('del_flg', 0)->get();
-
-        } elseif ($type === 'hosted') {
-            // 主催イベント（role=1 のユーザーのみ表示）
-            $events = Event::where('user_id', $user->id)
-                ->where('del_flg', 0)
-                ->when($user->role != 1, function ($query) {
-                    $query->whereRaw('1=0'); // role=1 以外は空
-                })
-                ->get();
-
-        } else {
-            // すべてのイベント
-            $events = Event::where('del_flg', 0)->get();
-        }
-
-        return view('user.main', compact('events'));
+    // ==================
+    // 種類別フィルタ
+    // ==================
+    if ($type === 'joined') {
+        $query->whereIn('id', function ($sub) use ($user) {
+            $sub->select('event_id')
+                ->from('applications')
+                ->where('user_id', $user->id);
+        });
+    } elseif ($type === 'bookmarked') {
+        $query->whereIn('id', function ($sub) use ($user) {
+            $sub->select('event_id')
+                ->from('bookmarks')
+                ->where('user_id', $user->id);
+        });
+    } elseif ($type === 'hosted') {
+        $query->where('user_id', $user->id);
     }
+
+    // ========= キーワード検索 =========
+    if (!empty($keyword)) {
+        $query->where(function ($q) use ($keyword) {
+            $q->where('title', 'LIKE', "%{$keyword}%")
+              ->orWhere('description', 'LIKE', "%{$keyword}%")
+              ->orWhereHas('user', function ($uq) use ($keyword) {
+                  $uq->where('name', 'LIKE', "%{$keyword}%");
+              });
+        });
+    }
+
+    // ========= 日付フィルタ =========
+    if ($startDate) {
+        $query->where('date', '>=', $startDate);
+    }
+    if ($endDate) {
+        $query->where('date', '<=', $endDate);
+    }
+
+    // ========= 形式フィルタ =========
+    if ($platform) {
+        $query->where('format', $platform);
+    }
+
+    $events = $query->orderBy('date', 'asc')->paginate(10);
+
+    return view('user.main', compact(
+        'events',
+        'keyword',
+        'startDate',
+        'endDate',
+        'platform'
+    ));
+}
+
 }

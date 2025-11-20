@@ -3,48 +3,56 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+use App\Models\Application;
+use App\Models\Report;
 
 class Event extends Model
+
 {
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $table = 'events';
 
     protected $fillable = [
-        'user_id', 
-        'title', 
-        'date', 
-        'start_time', 
-        'end_time', 
-        'format', 
+        'user_id',
+        'title',
+        'date',
+        'start_time',
+        'end_time',
+        'format',
         'capacity',
-        'status', 
         'status',
-        'description', 
+        'description',
         'image_path',
         'del_flg',
     ];
 
     public $timestamps = true;
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'password', 'remember_token',
-    ];
+    // 主催者（User）とのリレーション
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
+    // 参加申込とのリレーション
+    public function applications()
+    {
+        return $this->hasMany(Application::class, 'event_id');
+    }
+
+    // 違反報告とのリレーション
+    public function reports()
+    {
+        return $this->hasMany(Report::class, 'event_id');
+    }
+
+    public function joinedEvents()
+    {
+        return $this->belongsToMany(
+            Event::class,
+            'applications', // 中間テーブル名
+            'user_id',      // users.id → applications.user_id
+            'event_id'      // applications.event_id → events.id
+        );
+    }
 }

@@ -8,10 +8,9 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         <div>
-            @if (!empty($data['image_path']))
-                <img src="{{ asset('storage/' . $data['image_path']) }}" 
-                     class="rounded shadow w-full">
-            @else
+            @if ($tempPath)
+            <img src="{{ asset('storage/' . $tempPath) }}" class="rounded shadow w-full">
+                @else
                 <div class="w-full h-40 bg-gray-200 flex items-center justify-center">
                     画像なし
                 </div>
@@ -30,17 +29,17 @@
 
     </div>
 
-
-    <form action="{{ route('host.events.store.complete') }}" method="POST" class="mt-6">
+    <form action="{{ route('host.events.store.complete') }}" method="POST">
         @csrf
+
         @foreach ($data as $key => $value)
             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
         @endforeach
 
-        <div class="flex justify-between">
-            <a href="{{ url()->previous() }}" class="text-blue-600 hover:underline">訂正する</a>
-            <button class="px-4 py-2 bg-blue-600 text-balck rounded">登録する</button>
-        </div>
+        {{-- ⭐ 一時画像パスを hidden で送る --}}
+        <input type="hidden" name="temp_image" value="{{ $tempPath }}">
+
+        <button>登録する</button>
     </form>
 </div>
 @endsection

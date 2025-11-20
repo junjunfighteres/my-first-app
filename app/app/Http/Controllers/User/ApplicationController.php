@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Event;
 use App\Models\Application;
+use App\Models\Bookmark;
 
 class ApplicationController extends Controller
 {
@@ -105,32 +106,44 @@ class ApplicationController extends Controller
     // ② 確認画面
     public function applyConfirm(Request $request)
     {
-        $eventId = $request->input('event_id');
-        $event = Event::where('del_flg', 0)->findOrFail($eventId);
+        $request->validate([
+            'event_id' => 'required|integer',
+            'comment' => 'nullable|string|max:1000',
+        ]);
 
         // コメントは任意
         $validated = $request->validate([
             'comment' => ['nullable','string','max:1000'],
         ]);
 
-        // 確認画面に引き継ぐ
+        $event = Event::where('del_flg', 0)->findOrFail($request->event_id);
+
+        // 🔥 定員チェック（現在の参加者数）
+        $currentCount = Application::where('event_id', $event->id)->count();
+
+        if ($currentCount >= $event->capacity) {
+            return redirect()
+                ->route('events.apply', $event->id)
+                ->with('error', 'このイベントは定員に達しています。');
+        }
+
         return view('user.applications.apply_confirm', [
-            'event'   => $event,
-            'comment' => $validated['comment'] ?? '',
+            'event' => $event,
+            'comment' => $request->comment,
         ]);
     }
 
     // ③ 完了（保存）
     public function applyComplete(Request $request)
     {
-        $eventId = $request->input('event_id');
-        $event = Event::where('del_flg', 0)->findOrFail($eventId);
-
-        // 本番では auth 必須にすること推奨
         $user = Auth::user();
-        if (!$user) {
-            // 未ログインならログインへ（暫定）
-            return redirect()->route('login')->with('error','ログインが必要です。');
+        $event = Event::where('del_flg', 0)->findOrFail($request->event_id);
+
+        $currentCount = Application::where('event_id', $event->id)->count();
+        if ($currentCount >= $event->capacity) {
+            return redirect()
+                ->route('events.apply', $event->id)
+                ->with('error', 'このイベントは定員に達しているため、参加できませんでした。');
         }
 
         $validated = $request->validate([
@@ -139,11 +152,12 @@ class ApplicationController extends Controller
 
         // 二重申込防止（同一 user_id × event_id を1件に）
         Application::firstOrCreate(
-            [
+            [   
                 'user_id'  => $user->id,
                 'event_id' => $event->id,
+                'comment' => $request->comment ?? '',
             ],
-            [
+            [   
                 'comment'  => $validated['comment'] ?? '',
             ]
         );

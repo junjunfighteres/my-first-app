@@ -8,8 +8,9 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         <div>
-            @if ($data['image_path'])
-                <img src="{{ asset('storage/' . $data['image_path']) }}" class="rounded shadow w-full">
+            @if (!empty($data['image_path']))
+                <img src="{{ asset('storage/' . $data['image_path']) }}" 
+                     class="rounded shadow w-full">
             @else
                 <div class="w-full h-40 bg-gray-200 flex items-center justify-center">
                     画像なし
@@ -31,9 +32,22 @@
 
     <form action="{{ route('host.events.update.complete') }}" method="POST" class="mt-6">
         @csrf
-        @foreach ($data as $key => $value)
-            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-        @endforeach
+
+        {{-- 🔹 基本フィールド --}}
+        <input type="hidden" name="event_id" value="{{ e($data['event_id']) }}">
+        <input type="hidden" name="title" value="{{ e($data['title']) }}">
+        <input type="hidden" name="date" value="{{ e($data['date']) }}">
+        <input type="hidden" name="start_time" value="{{ e($data['start_time']) }}">
+        <input type="hidden" name="end_time" value="{{ e($data['end_time']) }}">
+        <input type="hidden" name="format" value="{{ e($data['format']) }}">
+        <input type="hidden" name="capacity" value="{{ e($data['capacity']) }}">
+        <input type="hidden" name="status" value="{{ e($data['status']) }}">
+
+        {{-- 🔹 画像パス --}}
+        <input type="hidden" name="image_path" value="{{ e($data['image_path']) }}">
+
+        {{-- 🔹 説明文（textarea hidden） --}}
+        <textarea name="description" hidden>{{ $data['description'] }}</textarea>
 
         <div class="flex justify-between">
             <a href="{{ url()->previous() }}" class="text-blue-600 hover:underline">訂正する</a>

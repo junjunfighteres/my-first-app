@@ -5,8 +5,10 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Event;
 use App\Models\Application;
+use App\Models\Bookmark;
 
 class EventController extends Controller
 {
@@ -16,37 +18,43 @@ class EventController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
-    {
-        // 基本条件（削除されていないイベント）
-        $query = Event::where('del_flg', 0);
+{
+    $user = Auth::user();
 
-        // 🔍 キーワード検索（タイトル or 説明）
-        if ($request->filled('keyword')) {
-            $keyword = $request->input('keyword');
-            $query->where(function($q) use ($keyword) {
-                $q->where('title', 'like', "%{$keyword}%")
-                  ->orWhere('description', 'like', "%{$keyword}%");
-            });
-        }
+    // 基本条件（削除されておらず、公開 or 自分のイベント）
+    $query = Event::where('del_flg', 0)
+        ->where(function ($q) use ($user) {
+            $q->where('status', 'public')
+              ->orWhere('user_id', $user->id); // ← 自分の非公開はOK
+        });
 
-        // 📅 日付検索
-        if ($request->filled('start_date')) {
-            $query->where('date', '>=', $request->input('start_date'));
-        }
-        if ($request->filled('end_date')) {
-            $query->where('date', '<=', $request->input('end_date'));
-        }
-
-        // 💻 開催形式（Twitch / YouTube）
-        if ($request->filled('platform')) {
-            $query->where('format', $request->input('platform'));
-        }
-
-        // デフォルトは全イベント表示
-        $events = $query->orderBy('date', 'asc')->get();
-
-        return view('user.main', compact('events'));
+    // 🔍 キーワード検索
+    if ($request->filled('keyword')) {
+        $keyword = $request->input('keyword');
+        $query->where(function($q) use ($keyword) {
+            $q->where('title', 'like', "%{$keyword}%")
+              ->orWhere('description', 'like', "%{$keyword}%");
+        });
     }
+
+    // 📅 日付検索
+    if ($request->filled('start_date')) {
+        $query->where('date', '>=', $request->input('start_date'));
+    }
+    if ($request->filled('end_date')) {
+        $query->where('date', '<=', $request->input('end_date'));
+    }
+
+    // 💻 プラットフォーム検索
+    if ($request->filled('platform')) {
+        $query->where('format', $request->input('platform'));
+    }
+
+    // 並び替え
+    $events = $query->orderBy('date', 'asc')->get();
+
+    return view('user.main', compact('events'));
+}
 
     /**
      * Show the form for creating a new resource.
@@ -71,19 +79,60 @@ class EventController extends Controller
      * @param  \App\Event  $event
      * @return \Illuminate\Http\Response
      */
-    public function show(Event $event) {
-    // 関連イベントを取得（同じ形式で、現在のイベント以外）
-        $related = Event::where('format', $event->format)
-            ->where('id', '!=', $event->id)
-            ->where('del_flg', 0)
-            ->limit(6)
-            ->get();
+    public function show(Event $event)
+{
+    // ⭐ 非公開イベントは主催者以外見れない
+    if ($event->status === 'private' && $event->user_id !== Auth::id()) {
+        abort(404); // 存在しない扱いにする方が安全
+    }
 
-        $isJoined = Auth::check() && Application::where('user_id', Auth::id())
-            ->where('event_id', $event->id)
-            ->exists();
+    // 主催者情報をロード
+    $event->load('user');
 
-        return view('user.events.detail', compact('event', 'related', 'isJoined'));
+    // ⭐ 関連イベント（主催者は非公開も見える）
+    $related = Event::where('format', $event->format)
+        ->where('id', '!=', $event->id)
+        ->where('del_flg', 0)
+        ->where(function ($q) {
+            $q->where('status', 'public')
+              ->orWhere('user_id', Auth::id()); // ← 自分の非公開は見える
+        })
+        ->limit(6)
+        ->get();
+
+    // コメント取得
+    $comments = $event->applications()
+        ->with('user')
+        ->orderBy('created_at', 'desc')
+        ->get();
+    
+    // 参加状態
+    $isJoined = Auth::check() && Application::where('user_id', Auth::id())
+        ->where('event_id', $event->id)
+        ->exists();
+
+    // ブックマーク状態
+    $isBookmarked = Auth::check() && Bookmark::where('user_id', Auth::id())
+        ->where('event_id', $event->id)
+        ->exists();
+
+    return view('user.events.detail', compact(
+        'event',
+        'related',
+        'isJoined',
+        'comments',
+        'isBookmarked'
+    ));
+}
+
+    public function showHost(Event $event)
+    {
+        if ($event->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // host用の表示
+        return view('user.host.detail', compact('event'));
     }
 
 
@@ -93,80 +142,101 @@ class EventController extends Controller
      * @param  \App\Event  $event
      * @return \Illuminate\Http\Response
      */
-    public function edit(Event $event) {
+    /**
+     * 編集画面
+     */
+    public function edit(Event $event)
+    {
         if ($event->user_id !== Auth::id()) {
-        abort(403);
+            abort(403);
         }
 
         return view('user.host.edit', compact('event'));
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Event  $event
-     * @return \Illuminate\Http\Response
+     * 編集内容確認
      */
-    public function updateConfirm(Request $request) {
+    public function updateConfirm(Request $request)
+    {
+        // バリデーション
         $validated = $request->validate([
-            'event_id'    => 'required|integer',
+            'event_id'      => 'required|integer',
+            'title'         => 'required|max:255',
+            'date'          => 'required|date',
+            'start_time'    => 'required',
+            'end_time'      => 'required',
+            'format'        => 'required',
+            'capacity'      => 'required|integer|min:1',
+            'status'        => 'required|string|in:public,private',
+            'description'   => 'nullable|max:2000',
+            'image'         => 'nullable|image|max:10240',
+            'current_image' => 'nullable|string',
+        ]);
+
+        // 新しい画像 → temp へ保存
+        if ($request->hasFile('image')) {
+            $tempPath = $request->file('image')->store('temp_events', 'public');
+            $validated['image_path'] = $tempPath;
+        } else {
+            $validated['image_path'] = $validated['current_image'] ?? null;
+        }
+
+        return view('user.host.edit_confirm', [
+            'data' => $validated
+        ]);
+    }
+
+    /**
+     * 編集完了
+     */
+    public function updateComplete(Request $request)
+    {
+        // バリデ再チェック（改ざん防止）
+        $validated = $request->validate([
+            'event_id'    => 'required|integer|exists:events,id',
             'title'       => 'required|max:255',
             'date'        => 'required|date',
             'start_time'  => 'required',
             'end_time'    => 'required',
             'format'      => 'required',
             'capacity'    => 'required|integer|min:1',
-            'status'      => 'required',
+            'status'      => 'required|string|in:public,private',
             'description' => 'nullable|max:2000',
-            'image'       => 'nullable|image|max:2048',
-            'current_image' => 'nullable|string',
+            'image_path'  => 'nullable|string',
         ]);
 
-        // 新しい画像があれば一時保存
-        if ($request->hasFile('image')) {
-            $temp = $request->file('image')->store('temp', 'public');
-            $validated['image_path'] = $temp;
-        } else {
-            $validated['image_path'] = $validated['current_image'] ?? null;
-        }
-
-        return view('user.host.edit_confirm', ['data' => $validated]);
-    }
-
-    public function updateComplete(Request $request) {
-        $data = $request->all();
-        $event = Event::findOrFail($data['event_id']);
+        $event = Event::findOrFail($validated['event_id']);
 
         if ($event->user_id !== Auth::id()) {
             abort(403);
         }
 
-        // 画像処理
+        // 現在の画像
         $finalImage = $event->image_path;
 
-        if (!empty($data['image_path']) && str_contains($data['image_path'], 'temp/')) {
-            $new = str_replace('temp', 'events', $data['image_path']);
-            \Storage::disk('public')->move($data['image_path'], $new);
-            $finalImage = $new;
+        // temp_events にある → 新しい画像なので移動
+        if ($validated['image_path'] && strpos($validated['image_path'], 'temp_events') === 0) {
+            $newPath = str_replace('temp_events', 'events', $validated['image_path']);
+            Storage::disk('public')->move($validated['image_path'], $newPath);
+            $finalImage = $newPath;
         }
 
-        // DB更新
+        // DB 更新
         $event->update([
-            'title'       => $data['title'],
-            'date'        => $data['date'],
-            'start_time'  => $data['start_time'],
-            'end_time'    => $data['end_time'],
-            'format'      => $data['format'],
-            'capacity'    => $data['capacity'],
-            'status' => 'required|string|in:public,private',
-            'status'      => $data['status'],
-            'description' => $data['description'],
+            'title'       => $validated['title'],
+            'date'        => $validated['date'],
+            'start_time'  => $validated['start_time'],
+            'end_time'    => $validated['end_time'],
+            'format'      => $validated['format'],
+            'capacity'    => $validated['capacity'],
+            'status'      => $validated['status'],
+            'description' => $validated['description'],
             'image_path'  => $finalImage,
         ]);
 
-    return view('user.host.edit_complete', compact('event'));
-}
+        return view('user.host.edit_complete', compact('event'));
+    }
     /**
      * Remove the specified resource from storage.
      *
@@ -197,45 +267,41 @@ class EventController extends Controller
 
     //作成内容確認
     public function storeConfirm(Request $request)
-    {
-        $validated = $request->validate([
-            'title'       => 'required|max:255',
-            'date'        => 'required|date',
-            'start_time'  => 'required',
-            'end_time'    => 'required',
-            'format'      => 'required',
-            'capacity'    => 'required|integer|min:1',
-            'status'      => 'required', // 公開/非公開
-            'description' => 'nullable|max:2000',
-            'image'       => 'nullable|image|max:2048',
-        ]);
+{
+    $validated = $request->validate([
+        'title'       => 'required|max:255',
+        'date'        => 'required|date',
+        'start_time'  => 'required',
+        'end_time'    => 'required',
+        'format'      => 'required',
+        'capacity'    => 'required|integer|min:1',
+        'status'      => 'required',
+        'description' => 'nullable|max:2000',
+        'image'       => 'nullable|image|max:10240', //10MB
+    ]);
 
-        // 画像を一時保存（確認画面で必要）
-        if ($request->hasFile('image')) {
-            $tempPath = $request->file('image')->store('temp', 'public');
-            $validated['image_path'] = $tempPath;
-        }
+    $data = $request->only([
+        'title','date','start_time','end_time',
+        'format','capacity','status','description'
+    ]);
 
-        return view('user.host.create_confirm', [
-            'data' => $validated
-        ]);
+    // ⭐ 一時保存
+    $tempPath = null;
+    if ($request->hasFile('image')) {
+        $tempPath = $request->file('image')->store('temp_events', 'public');
     }
 
+    return view('user.host.create_confirm', [
+        'data'     => $data,
+        'tempPath' => $tempPath,
+    ]);
+}
 
     /**
      * 19. 新規登録（完了）
      */
     public function storeComplete(Request $request)
-    {
-        $user = Auth::user();
-
-    // 🔹 一般ユーザー（role=0）も作成可能にする場合はコメントアウト
-    // if ($user->role != 1) {
-    //     return redirect()->route('events.index')
-    //         ->with('error', '主催者権限がありません。');
-    // }
-
-    // バリデーション
+{
     $validated = $request->validate([
         'title'       => 'required|string|max:255',
         'date'        => 'required|date',
@@ -245,19 +311,18 @@ class EventController extends Controller
         'capacity'    => 'required|integer|min:1',
         'status'      => 'required|string',
         'description' => 'nullable|string|max:2000',
-        'image_path'  => 'nullable|string',
+        'temp_image'  => 'nullable|string', // ← ココ重要！
     ]);
 
-    // 画像を正式フォルダに移動
+    // ⭐ 本保存
     $finalImage = null;
-    if (!empty($validated['image_path'])) {
-        $finalImage = str_replace('temp', 'events', $validated['image_path']);
-        \Storage::disk('public')->move($validated['image_path'], $finalImage);
+    if (!empty($validated['temp_image'])) {
+        $finalImage = str_replace('temp_events', 'events', $validated['temp_image']);
+        Storage::disk('public')->move($validated['temp_image'], $finalImage);
     }
 
-    // DBに保存
     $event = Event::create([
-        'user_id'     => $user->id,
+        'user_id'     => Auth::id(),
         'title'       => $validated['title'],
         'date'        => $validated['date'],
         'start_time'  => $validated['start_time'],
@@ -271,5 +336,5 @@ class EventController extends Controller
     ]);
 
     return view('user.host.create_complete', compact('event'));
-    }
+}
 }
