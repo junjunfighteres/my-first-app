@@ -44,53 +44,58 @@
             {{-- アクションボタン --}}
             <div class="mt-4 flex flex-wrap gap-3">
 
-            {{-- 一般ユーザー用（role = 0） --}}
-            @if (Auth::check() && Auth::user()->role == 0 && Auth::id() !== $event->user_id)
-                <a href="{{ route('events.apply', $event->id) }}" class="inline-block">
-                    <button id="apply-btn-{{ $event->id }}" data-event-id="{{ $event->id }}" class="bg-blue-500 hover:bg-blue-600 text-black px-4 py-2 rounded-lg">
-                        {{ $isJoined ? '参加をキャンセル' : '参加する' }}
-                    </button>
-                </a>
+            {{-- 一般ユーザー用（role = 0 & 主催者以外） --}}
+@if (Auth::check() && Auth::user()->role == 0 && Auth::id() !== $event->user_id)
 
-                {{-- ブックマークボタン --}}
-                <button 
-                    id="bookmark-btn-{{ $event->id }}"
-                    data-event-id="{{ $event->id }}"
-                    class="px-4 py-2 rounded-lg text-black
-                        {{ $isBookmarked ? 'bg-yellow-500' : 'bg-yellow-400' }}">
-                        {{ $isBookmarked ? '★ ブックマーク中' : '☆ ブックマーク' }}
-                </button>
+    <a href="{{ route('events.apply', $event->id) }}" class="inline-block">
+        <button id="apply-btn-{{ $event->id }}" data-event-id="{{ $event->id }}" class="bg-blue-500 hover:bg-blue-600 text-black px-4 py-2 rounded-lg">
+            {{ $isJoined ? '参加をキャンセル' : '参加する' }}
+        </button>
+    </a>
 
-                {{-- 違反報告（一般ユーザー専用 & reports_enabled が true のときだけ） --}}
-                @if (Auth::check() && Auth::user()->role === 0 && $event->reports_enabled)
-                    <a href="{{ route('report.create', $event->id) }}" class="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 rounded-lg">
-                        違反報告
-                    </a>
-                @endif
+    {{-- ブックマークボタン --}}
+    <button 
+        id="bookmark-btn-{{ $event->id }}"
+        data-event-id="{{ $event->id }}"
+        class="px-4 py-2 rounded-lg text-black
+            {{ $isBookmarked ? 'bg-yellow-500' : 'bg-yellow-400' }}">
+            {{ $isBookmarked ? '★ ブックマーク中' : '☆ ブックマーク' }}
+    </button>
 
-            {{-- 主催者用（role = 0） --}}
-            @if (Auth::check() && Auth::user()->role == 0 && Auth::id() === $event->user_id)
-                <div class="flex flex-row gap-4 items-center justify-start">
+    {{-- 違反報告（reports_enabled が true のときだけ） --}}
+    @if ($event->reports_enabled)
+        <a href="{{ route('report.create', $event->id) }}" class="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 rounded-lg">
+            違反報告
+        </a>
+    @endif
 
-                    {{-- 編集ボタン --}}
-                    <a href="{{ route('host.events.edit', $event->id) }}" class="inline-block">
-                        <button type="button" class="bg-green-500 hover:bg-green-600 text-black px-4 py-2 rounded-lg">
-                            編集する
-                        </button>
-                    </a>
+@endif  {{-- ←← これが抜けていた！！！ --}}
 
-                    {{-- 削除ボタン --}}
-                    <form action="{{ route('host.events.destroy', $event->id) }}" method="POST"
-                        onsubmit="return confirm('本当にこのイベントを削除しますか？');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-black px-4 py-2 rounded-lg">
-                            削除する
-                        </button>
-                    </form>
+{{-- 主催者用（role = 0 & 自分のイベント） --}}
+@if (Auth::check() && Auth::user()->role == 0 && Auth::id() === $event->user_id)
 
-                </div>
-            @endif
+    <div class="flex flex-row gap-4 items-center justify-start">
+
+        {{-- 編集ボタン --}}
+        <a href="{{ route('host.events.edit', $event->id) }}" class="inline-block">
+            <button type="button" class="bg-green-500 hover:bg-green-600 text-black px-4 py-2 rounded-lg">
+                編集する
+            </button>
+        </a>
+
+        {{-- 削除ボタン --}}
+        <form action="{{ route('host.events.destroy', $event->id) }}" method="POST"
+            onsubmit="return confirm('本当にこのイベントを削除しますか？');">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="bg-red-500 hover:bg-red-600 text-black px-4 py-2 rounded-lg">
+                削除する
+            </button>
+        </form>
+
+    </div>
+
+@endif
 
             {{-- 管理者用（role = 2） --}}
          
