@@ -141,4 +141,23 @@ class AdminEventController extends Controller
         return view('admin.events.hidden_complete', compact('event'));
     }
 
+    public function disableReports(Event $event)
+{
+    $event->reports_enabled = false;
+    $event->save();
+
+    return redirect()
+        ->route('events.show', $event->id)
+        ->with('success', 'このイベントの違反報告を無効化しました。');
+}
+
+    public function enableReports(Event $event)
+{
+    $event->reports_enabled = true;
+    $event->save();
+
+    return redirect()
+        ->route('events.show', $event->id)
+        ->with('success', 'このイベントの違反報告を再度有効化しました。');
+}
 }

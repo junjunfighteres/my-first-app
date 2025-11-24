@@ -12,7 +12,7 @@
         </p>
         <p>📅 {{ $event->date }} {{ $event->start_time }}</p>
         <p>📺 {{ $event->format }}</p>
-        <a href="{{ route('events.show', $event->id) }}">詳細を見る</a>
+        <a href="{{ route('user.events.show', $event->id) }}">詳細を見る</a>
       </div>
     @endforeach
   </div>

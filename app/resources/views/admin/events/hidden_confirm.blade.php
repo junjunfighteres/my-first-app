@@ -9,7 +9,7 @@
 
     {{-- 戻るリンク --}}
     <div class="mb-4">
-        <a href="{{ route('admin.events.show', $event->id) }}" class="text-blue-600 hover:underline">
+        <a href="{{ route('events.show', $event->id) }}" class="text-blue-600 hover:underline">
             ← イベント詳細に戻る
         </a>
     </div>
@@ -35,7 +35,7 @@
 
         <form action="{{ route('admin.events.hidden.complete', $event->id) }}" method="POST" class="mt-6 flex justify-between">
             @csrf
-            <a href="{{ route('admin.events.show', $event->id) }}" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+            <a href="{{ route('events.show', $event->id) }}" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
                 キャンセル
             </a>
             <button type="submit" class="px-4 py-2 bg-red-600 text-black rounded hover:bg-red-700">

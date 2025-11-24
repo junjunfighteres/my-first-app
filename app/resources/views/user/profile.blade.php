@@ -110,6 +110,18 @@
 
     @endif
 
+    {{-- ▼▼ サイト統計情報（全ユーザー向け） ▼▼ --}}
+    <div class="p-4 bg-gray-100 rounded-lg shadow mt-5">
+        <h2 class="text-xl font-bold mb-3">📊 サイト統計情報</h2>
+
+        <ul class="space-y-2 text-lg">
+            <li>・登録ユーザー数：<span class="font-bold">{{ $userCount }}</span> 名</li>
+            <li>・イベント総数：<span class="font-bold">{{ $eventCount }}</span> 件</li>
+            <li>・違反報告件数：<span class="font-bold">{{ $reportCount }}</span> 件</li>
+            <li>・参加申込総数：<span class="font-bold">{{ $joinCount }}</span> 件</li>
+        </ul>
+    </div>
+
     {{-- 主催イベント --}}
     <h3 class="mt-5">主催イベント</h3>
     @if($hosted->count())
@@ -118,7 +130,7 @@
                 <div class="event-card">
                     <h4>{{ $event->title }}</h4>
                     <p>📅 {{ $event->date }}</p>
-                    <a href="{{ route('events.show', $event->id) }}">詳細を見る</a>
+                    <a href="{{ route('user.events.show', $event->id) }}">詳細を見る</a>
                 </div>
             @endforeach
         </div>
@@ -134,7 +146,7 @@
                 <div class="event-card">
                     <h4>{{ $event->title }}</h4>
                     <p>📅 {{ $event->date }}</p>
-                    <a href="{{ route('events.show', $event->id) }}">詳細を見る</a>
+                    <a href="{{ route('user.events.show', $event->id) }}">詳細を見る</a>
                 </div>
             @endforeach
         </div>

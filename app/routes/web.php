@@ -27,9 +27,6 @@ Route::middleware('auth')->group(function () {
         // ======================
         // Event 詳細の公開範囲制御
         // ======================
-        Route::get('events/{event}', 'User\EventController@show')
-            ->middleware('auth')
-            ->name('events.show');
 
         // 7. 一般メインページ
         Route::get('/events', 'DisplayController@index')->name('events.index');
@@ -47,8 +44,11 @@ Route::middleware('auth')->group(function () {
         // ============================
         // Event（閲覧・参加者向け）
         // ============================
-        Route::resource('events', 'EventController')->only([
-            'index', 'show'
+        Route::resource('user/events', 'EventController')
+            ->only(['index', 'show'])
+            ->names([
+                'index' => 'user.events.index',
+                'show'  => 'user.events.show',
         ]);
         // show → 8. イベント詳細
 
@@ -132,11 +132,11 @@ Route::middleware('auth')->group(function () {
 | namespace: App\Http\Controllers\Admin
 |--------------------------------------------------------------------------
 */
-Route::prefix('admin')->namespace('Admin')->as('admin.')->middleware('admin')
+Route::prefix('admin')->namespace('Admin')->middleware('admin')
     ->group(function () {
 
         // 20. 管理者ダッシュボード
-        Route::get('/', 'AdminController@index')->name('home');
+        Route::get('/', 'AdminController@index')->name('admin.home');
 
         // ============================
         // 21. イベント管理
@@ -147,11 +147,11 @@ Route::prefix('admin')->namespace('Admin')->as('admin.')->middleware('admin')
 
         // 25. 非表示確認
         Route::post('events/{event}/hidden/confirm', 'AdminEventController@hiddenConfirm')
-            ->name('events.hidden.confirm');
+            ->name('admin.events.hidden.confirm');
 
         // 26. 非表示完了
         Route::post('events/{event}/hidden/complete', 'AdminEventController@hiddenComplete')
-            ->name('events.hidden.complete');
+            ->name('admin.events.hidden.complete');
 
         // ============================
         // 22. ユーザー管理
@@ -160,20 +160,37 @@ Route::prefix('admin')->namespace('Admin')->as('admin.')->middleware('admin')
             'index', 'show', 'update'
         ]);
 
-        // 27. 利用停止確認
-        Route::post('users/{user}/suspend/confirm', 'AdminUserController@suspendConfirm')
-            ->name('users.suspend.confirm');
+        // ⭐ 利用停止確認画面
+        Route::post('users/{id}/suspend/confirm',
+            'AdminUserController@suspendConfirm'
+        )->name('admin.users.suspend.confirm');
 
-        // 28. 利用停止完了
-        Route::post('users/{user}/suspend/complete', 'AdminUserController@suspendComplete')
-            ->name('users.suspend.complete');
+        // ⭐ 利用停止 実行ルート
+        Route::post('users/{id}/suspend',
+            'AdminUserController@suspend'
+        )->name('admin.users.suspend');
+
+        // ★ 利用再開 → 確認
+        Route::post('/users/{id}/unsuspend/confirm',
+            'AdminUserController@unsuspendConfirm'
+        )->name('admin.users.unsuspend.confirm');
+
+        // ★ 利用再開 → 実行
+        Route::post('/users/{id}/unsuspend',
+        'AdminUserController@unsuspend'
+        )->name('admin.users.unsuspend');
 
         // ============================
         // 23. 参加申込監視
         // ============================
         Route::get('applications/observe', 'AdminApplicationController@observe')
-            ->name('applications.observe');
+            ->name('admin.applications.observe');
 
+        Route::post('events/{event}/reports/disable', 'AdminEventController@disableReports')
+            ->name('admin.events.reports.disable');
+
+        Route::post('events/{event}/reports/enable', 'AdminEventController@enableReports')
+            ->name('admin.events.reports.enable');
     });
 });
 

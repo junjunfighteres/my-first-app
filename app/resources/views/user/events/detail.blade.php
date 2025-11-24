@@ -5,7 +5,7 @@
 
     {{-- 戻るリンク --}}
     <div class="mb-4">
-        {{-- <a href="{{ route('events.index') }}" class="text-blue-600 hover:underline">🔙 イベント一覧へ戻る</a> --}}
+        {{-- <a href="{{ route('user.events.index') }}" class="text-blue-600 hover:underline">🔙 イベント一覧へ戻る</a> --}}
     </div>
 
     {{-- イベント概要 --}}
@@ -31,7 +31,7 @@
             @endif
             <p class="text-gray-700 mb-2">
                 主催者：
-                <a href="{{ route('events.index', ['user' => $event->user_id]) }}" 
+                <a href="{{ route('user.profile.other', ['id' => $event->user_id]) }}" 
                     class="text-blue-600 hover:underline">
                     {{ $event->user->name }}
                 </a>
@@ -61,12 +61,12 @@
                         {{ $isBookmarked ? '★ ブックマーク中' : '☆ ブックマーク' }}
                 </button>
 
-                {{-- 違反報告 --}}
-                <a href="{{ route('report.create', $event->id) }}" 
-                    class="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 rounded-lg">
+                {{-- 違反報告（一般ユーザー専用 & reports_enabled が true のときだけ） --}}
+                @if (Auth::check() && Auth::user()->role === 0 && $event->reports_enabled)
+                    <a href="{{ route('report.create', $event->id) }}" class="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 rounded-lg">
                         違反報告
-                </a>
-            @endif
+                    </a>
+                @endif
 
             {{-- 主催者用（role = 0） --}}
             @if (Auth::check() && Auth::user()->role == 0 && Auth::id() === $event->user_id)

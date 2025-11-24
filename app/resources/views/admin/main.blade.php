@@ -22,12 +22,12 @@
             <h2 class="text-xl font-bold mb-3">🔗 管理メニュー</h2>
 
             <div class="space-y-3">
-                <a href="{{ route('admin.events.index') }}" 
+                <a href="{{ route('events.index') }}" 
                    class="block bg-blue-500 text-black px-4 py-2 rounded-lg hover:bg-blue-600">
                     📅 イベント管理
                 </a>
 
-                <a href="{{ route('admin.users.index') }}" 
+                <a href="{{ route('users.index') }}" 
                    class="block bg-green-500 text-black px-4 py-2 rounded-lg hover:bg-green-600">
                     👤 ユーザー管理
                 </a>

@@ -8,7 +8,7 @@
         <h1 class="text-2xl font-bold">📝 イベント詳細（管理者）</h1>
 
         <div class="flex gap-4">
-            <a href="{{ route('admin.events.index') }}" class="text-blue-600 hover:underline">
+            <a href="{{ route('events.index') }}" class="text-blue-600 hover:underline">
                 ← イベント一覧に戻る
             </a>
         </div>
@@ -71,13 +71,24 @@
     {{-- アクションボタン（管理者専用） --}}
     <div class="flex gap-4">
 
-        {{-- 違反報告をクリア（全件削除） --}}
-        <form action="{{ route('admin.events.hidden.confirm', $event->id) }}" method="POST">
-            @csrf
-            <button class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black rounded">
-                ⚠️ 違反報告をクリア
-            </button>
-        </form>
+        {{-- 違反報告ステータス表示 --}}
+        @if ($event->reports_enabled)
+            {{-- reports_enabled = 1 → 無効化ボタンを表示 --}}
+            <form action="{{ route('admin.events.reports.disable', $event->id) }}" method="POST">
+                @csrf
+                <button class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-black rounded">
+                    🚫 違反報告ボタンを無効化する
+                </button>
+            </form>
+        @else
+            {{-- reports_enabled = 0 → 有効化ボタンを表示 --}}
+            <form action="{{ route('admin.events.reports.enable', $event->id) }}" method="POST">
+                @csrf
+                <button class="px-4 py-2 bg-green-500 hover:bg-green-600 text-black rounded">
+                    ✅ 違反報告ボタンを再表示する
+                </button>
+            </form>
+        @endif
 
         {{-- イベントを非公開へ移動 --}}
         <form action="{{ route('admin.events.hidden.confirm', $event->id) }}" method="POST">

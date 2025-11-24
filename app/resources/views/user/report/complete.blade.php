@@ -7,7 +7,7 @@
 
     <p class="mb-6">運営が内容を確認します。</p>
 
-    <button onclick="window.location='{{ route('events.index') }}'"
+    <button onclick="window.location='{{ route('user.events.index') }}'"
         class="px-6 py-3 bg-blue-600 text-black rounded-lg shadow hover:bg-blue-700 transition">
         メインページに戻る
     </button>

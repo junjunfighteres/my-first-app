@@ -65,7 +65,7 @@ class LoginController extends Controller
 
         if ($user && $user->del_flg == 1) {
             return redirect()->route('login')
-                ->withErrors(['email' => 'このアカウントは退会済みのためログインできません。']);
+                ->withErrors(['email' => 'このアカウントは制限させているためログインできません。']);
         }
 
         return redirect()->route('login')

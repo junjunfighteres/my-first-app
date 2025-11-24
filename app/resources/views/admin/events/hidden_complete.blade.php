@@ -21,12 +21,12 @@
     </div>
 
     <div class="space-x-4 mt-6">
-        <a href="{{ route('admin.events.show', $event->id) }}" 
+        <a href="{{ route('events.show', $event->id) }}" 
            class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
             イベント詳細に戻る
         </a>
 
-        <a href="{{ route('admin.events.index') }}" 
+        <a href="{{ route('events.index') }}" 
            class="px-4 py-2 bg-blue-500 text-black rounded hover:bg-blue-600">
             イベント管理一覧に戻る
         </a>
