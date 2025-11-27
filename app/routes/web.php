@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\TestMailController;
 
 // =============================
@@ -22,18 +23,35 @@ Route::get('/withdraw/complete', function () {
 // =============================
 // パスワードリセット（独自実装）
 // =============================
+// メール入力画面
 Route::get('/password/reset', function () {
     return view('auth.passwords.email');
 })->name('password.request');
 
+// メール送信処理
 Route::post('/password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])
     ->name('password.email');
 
-Route::get('/password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])
+// パスワード再設定フォーム
+Route::get('/password/reset/{token}', [ForgotPasswordController::class, 'showResetForm'])
     ->name('password.reset');
 
-Route::post('/password/reset', [ResetPasswordController::class, 'reset'])
+// パスワード更新
+Route::post('/password/reset', [ForgotPasswordController::class, 'reset'])
     ->name('password.update');
+
+// =============================
+// ログアウト（POST専用）
+// =============================
+Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+
+// =============================
+// 新規登録（独立追加 / Auth::routes()なし）
+// =============================
+Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])
+    ->name('register');
+
+Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
 
 // =============================
 // テストメール
@@ -86,7 +104,7 @@ Route::middleware('auth')->namespace('User')->group(function () {
         Route::get('events/create', 'EventController@create')->name('host.events.create');
         Route::post('events/create/confirm', 'EventController@storeConfirm')->name('host.events.store.confirm');
         Route::post('events/create/complete', 'EventController@storeComplete')->name('host.events.store.complete');
-        Route::get('events/{event}', 'EventController@show')->name('host.events.show');
+        Route::get('events/{event}', 'EventController@showHost')->name('host.events.show');
         Route::get('events/{event}/edit', 'EventController@edit')->name('host.events.edit');
         Route::post('events/confirm', 'EventController@updateConfirm')->name('host.events.update.confirm');
         Route::post('events/complete', 'EventController@updateComplete')->name('host.events.update.complete');

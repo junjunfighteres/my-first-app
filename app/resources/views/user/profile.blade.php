@@ -72,7 +72,10 @@
 
             @csrf
             {{-- 画像 --}}
-            <input type="file" name="avatar" id="avatarInput" style="display: none" />
+            <div class="mb-3">
+                <label class="form-label">プロフィール画像</label>
+                <input type="file" name="avatar" class="form-control">
+            </div>
 
             {{-- 自己紹介 --}}
             <div class="form-group mt-4" style="max-width: 600px; margin: 0 auto;">

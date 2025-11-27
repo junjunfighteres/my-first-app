@@ -26,6 +26,7 @@ class CreateEventsTable extends Migration
             $table->string('image_path', 255)->nullable();
             $table->tinyInteger('del_flg')->default(0);
             $table->timestamps();
+            $table->string('status')->randomElement(['public', 'private']);
         });
     }
 

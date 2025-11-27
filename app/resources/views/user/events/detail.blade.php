@@ -9,18 +9,19 @@
     </div>
 
     {{-- イベント概要 --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-b pb-6 mb-6">
-        <div>
-            @if (!empty($event->image_path))
-                <img src="{{ asset('storage/' . $event->image_path) }}"
-                    alt="イベント画像"
-                    class="w-full rounded-lg shadow">
-            @else
-                <div class="w-full h-40 bg-gray-200 flex items-center justify-center text-gray-500">
-                    画像なし
-                </div>
-            @endif
+    <div>
+    @if (!empty($event->image_path))
+        <div style="width: 100%; max-height: 300px; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #f3f3f3;">
+    <img src="{{ asset('storage/' . $event->image_path) }}"
+         style="max-width: 100%; max-height: 300px; object-fit: contain;"
+         alt="イベント画像">
+</div>
+    @else
+        <div class="w-full h-40 bg-gray-200 flex items-center justify-center text-gray-500">
+            画像なし
         </div>
+    @endif
+</div>
         <div>
             <h1 class="text-2xl font-bold mb-2">{{ $event->title }}</h1>
             {{-- 🔒 主催者だけ見える非公開ラベル --}}

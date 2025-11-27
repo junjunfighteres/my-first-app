@@ -18,7 +18,7 @@
     </div>
 
     <button onclick="window.location='{{ route('user.events.index') }}'"
-        class="px-6 py-3 bg-blue-600 text-balck rounded-lg shadow hover:bg-blue-700">
+        class="px-6 py-3 bg-blue-600 text-black rounded-lg shadow hover:bg-blue-700">
         メインページへ戻る
     </button>
 

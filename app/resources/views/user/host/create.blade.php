@@ -29,12 +29,15 @@
             </div>
         </div>
 
-        <div class="mb-4">
-            <label>開催形式</label>
-            <select name="format" class="form-select" required>
-                <option value="Twitch">Twitch</option>
-                <option value="YouTube">YouTube</option>
-                <option value="その他">その他</option>
+        <div class="col-md-3">
+            <label class="form-label">イベント種別</label>
+            <select name="format" class="form-select">
+                <option value="">すべて</option>
+                <option value="meeting"  {{ request('category')=='meeting' ? 'selected':'' }}>オンラインミーティング</option>
+                <option value="seminar"  {{ request('category')=='seminar' ? 'selected':'' }}>セミナー</option>
+                <option value="workshop" {{ request('category')=='workshop'? 'selected':'' }}>ワークショップ</option>
+                <option value="sports"   {{ request('category')=='sports'  ? 'selected':'' }}>スポーツイベント</option>
+                <option value="party"    {{ request('category')=='party'   ? 'selected':'' }}>交流会</option>
             </select>
         </div>
 
@@ -43,9 +46,9 @@
             <input type="number" name="capacity" class="form-control" value="50" required>
         </div>
 
-        <div class="mb-4">
-            <label class="mt-3">イベント画像</label>
-            <input type="file" name="image" class="form-control" accept="image/*">
+        <div class="mb-3">
+            <label class="form-label">イベント画像</label>
+            <input type="file" name="image" class="form-control">
         </div>
 
         <div class="mb-4">

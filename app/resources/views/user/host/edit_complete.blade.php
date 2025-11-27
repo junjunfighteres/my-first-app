@@ -17,9 +17,9 @@
         </p>
     </div>
 
-    <button onclick="window.location='{{ route('host.events.show', $event->id) }}'"
+    <button onclick="window.location='{{ route('user.events.index') }}'"
         class="px-6 py-3 bg-blue-600 text-black rounded-lg shadow hover:bg-blue-700">
-        イベント詳細へ戻る
+        メインページへ戻る
     </button>
 
 </div>

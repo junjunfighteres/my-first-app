@@ -33,20 +33,20 @@
     <form action="{{ route('host.events.update.complete') }}" method="POST" class="mt-6">
         @csrf
 
-        {{-- 🔹 基本フィールド --}}
-        <input type="hidden" name="event_id" value="{{ e($data['event_id']) }}">
-        <input type="hidden" name="title" value="{{ e($data['title']) }}">
-        <input type="hidden" name="date" value="{{ e($data['date']) }}">
-        <input type="hidden" name="start_time" value="{{ e($data['start_time']) }}">
-        <input type="hidden" name="end_time" value="{{ e($data['end_time']) }}">
-        <input type="hidden" name="format" value="{{ e($data['format']) }}">
-        <input type="hidden" name="capacity" value="{{ e($data['capacity']) }}">
-        <input type="hidden" name="status" value="{{ e($data['status']) }}">
+        {{-- 基本情報 --}}
+        <input type="hidden" name="event_id" value="{{ $data['event_id'] }}">
+        <input type="hidden" name="title" value="{{ $data['title'] }}">
+        <input type="hidden" name="date" value="{{ $data['date'] }}">
+        <input type="hidden" name="start_time" value="{{ $data['start_time'] }}">
+        <input type="hidden" name="end_time" value="{{ $data['end_time'] }}">
+        <input type="hidden" name="format" value="{{ $data['format'] }}">
+        <input type="hidden" name="capacity" value="{{ $data['capacity'] }}">
+        <input type="hidden" name="status" value="{{ $data['status'] }}">
 
-        {{-- 🔹 画像パス --}}
-        <input type="hidden" name="image_path" value="{{ e($data['image_path']) }}">
+        {{-- ⭐これが必要！！ --}}
+        <input type="hidden" name="image_path" value="{{ $data['image_path'] }}">
 
-        {{-- 🔹 説明文（textarea hidden） --}}
+        {{-- 説明 --}}
         <textarea name="description" hidden>{{ $data['description'] }}</textarea>
 
         <div class="flex justify-between">
