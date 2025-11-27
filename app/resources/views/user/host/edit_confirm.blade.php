@@ -8,11 +8,14 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         <div>
-            @if (!empty($data['image_path']))
-                <img src="{{ asset('storage/' . $data['image_path']) }}" 
-                     class="rounded shadow w-full">
+            @if (!empty($event->image_path))
+                <div style="width: 100%; max-height: 300px; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #f3f3f3;">
+                    <img src="{{ asset('storage/' . $event->image_path) }}"
+                        style="max-width: 100%; max-height: 300px; object-fit: contain;"
+                        alt="イベント画像">
+                </div>
             @else
-                <div class="w-full h-40 bg-gray-200 flex items-center justify-center">
+                <div class="w-full h-40 bg-gray-200 flex items-center justify-center text-gray-500">
                     画像なし
                 </div>
             @endif

@@ -5,11 +5,27 @@
 
     <h1 class="text-2xl font-bold mb-6">✅ 登録内容確認</h1>
 
+    {{-- ★ 追加：エラー表示（text-danger） --}}
+    @if ($errors->any())
+        <div class="mb-4 p-4 bg-red-100 border border-red-300 rounded">
+            <strong class="text-danger">入力内容にエラーがあります：</strong>
+            <ul class="mt-2 text-danger">
+                @foreach ($errors->all() as $error)
+                    <li>・{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         <div>
-            @if ($tempPath)
-                <img src="{{ asset('storage/'.$tempPath) }}" class="rounded shadow w-full">
+            @if (!empty($tempPath))
+                <div style="width: 100%; max-height: 300px; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #f3f3f3;">
+                    <img src="{{ asset('storage/' . $tempPath) }}"
+                        style="max-width: 100%; max-height: 300px; object-fit: contain;"
+                        alt="イベント画像">
+                </div>
             @else
                 <div class="w-full h-40 bg-gray-200 flex items-center justify-center text-gray-500">
                     画像なし
@@ -33,14 +49,14 @@
         @csrf
 
         {{-- 必須データ --}}
-        <input type="hidden" name="title"        value="{{ e($data['title']) }}">
-        <input type="hidden" name="date"         value="{{ e($data['date']) }}">
-        <input type="hidden" name="start_time"   value="{{ e($data['start_time']) }}">
-        <input type="hidden" name="end_time"     value="{{ e($data['end_time']) }}">
-        <input type="hidden" name="format"       value="{{ e($data['format']) }}">
-        <input type="hidden" name="capacity"     value="{{ e($data['capacity']) }}">
-        <input type="hidden" name="status"       value="{{ e($data['status']) }}">
-        <input type="hidden" name="description"  value="{{ e($data['description']) }}">
+        <input type="hidden" name="title"       value="{{ e($data['title']) }}">
+        <input type="hidden" name="date"        value="{{ e($data['date']) }}">
+        <input type="hidden" name="start_time"  value="{{ e($data['start_time']) }}">
+        <input type="hidden" name="end_time"    value="{{ e($data['end_time']) }}">
+        <input type="hidden" name="format"      value="{{ e($data['format']) }}">
+        <input type="hidden" name="capacity"    value="{{ e($data['capacity']) }}">
+        <input type="hidden" name="status"      value="{{ e($data['status']) }}">
+        <input type="hidden" name="description" value="{{ e($data['description']) }}">
 
         {{-- 一時画像 --}}
         <input type="hidden" name="temp_image" value="{{ $tempPath }}">
