@@ -158,11 +158,11 @@ class EventController extends Controller
      * ============================================================ */
     public function destroy(Event $event)
     {
-        $this->authorizeOwner($event);
+        // $this->authorizeOwner($event);
 
         $event->update(['del_flg' => 1]);
 
-        return redirect()->route('events.index')
+        return redirect()->route('user.events.index')
             ->with('success', 'イベントを削除しました。');
     }
 

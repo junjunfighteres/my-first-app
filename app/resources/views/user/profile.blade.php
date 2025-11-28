@@ -115,15 +115,13 @@
 
     {{-- ▼▼ サイト統計情報（全ユーザー向け） ▼▼ --}}
     <div class="p-4 bg-gray-100 rounded-lg shadow mt-5">
-        <h2 class="text-xl font-bold mb-3">📊 サイト統計情報</h2>
+    <h2 class="text-xl font-bold mb-3">📊 イベント活動</h2>
 
-        <ul class="space-y-2 text-lg">
-            <li>・登録ユーザー数：<span class="font-bold">{{ $userCount }}</span> 名</li>
-            <li>・イベント総数：<span class="font-bold">{{ $eventCount }}</span> 件</li>
-            <li>・違反報告件数：<span class="font-bold">{{ $reportCount }}</span> 件</li>
-            <li>・参加申込総数：<span class="font-bold">{{ $joinCount }}</span> 件</li>
-        </ul>
-    </div>
+    <ul class="space-y-2 text-lg">
+        <li>・主催したイベント数：<span class="font-bold">{{ $hostCount }}</span> 件</li>
+        <li>・参加したイベント数：<span class="font-bold">{{ $joinedCount }}</span> 件</li>
+    </ul>
+</div>
 
     {{-- 主催イベント --}}
     <h3 class="mt-5">主催イベント</h3>

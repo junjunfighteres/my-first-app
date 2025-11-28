@@ -8,46 +8,50 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use App\Models\Event;
-use App\Models\Report;
 use App\Models\Application;
+use App\Models\Report;
 use App\Models\Bookmark;
 
 class ProfileController extends Controller
 {
+    /**
+     * 自分のプロフィール表示
+     */
     public function show()
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    // ▼ 統計データ
-    $userCount = User::where('del_flg', 0)->count();
-    $eventCount = Event::where('del_flg', 0)->count();
-    $reportCount = Report::count();
-    $joinCount = Application::count();
+        // ▼ 主催イベント
+        $hosted = Event::where('user_id', $user->id)
+            ->where('del_flg', 0)
+            ->get();
 
-    // ▼ 主催イベント
-    $hosted = Event::where('user_id', $user->id)->get();
+        // ▼ 参加イベント
+        $joined = Event::whereHas('applications', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->get();
 
-    // ▼ 参加イベント
-    $joined = Event::whereHas('applications', function($q) use ($user) {
-        $q->where('user_id', $user->id);
-    })->get();
+        // ▼ 個人の統計値
+        $hostCount   = $hosted->count();
+        $joinedCount = $joined->count();
 
-    return view('user.profile', [
-        'user' => $user,
-        'hosted' => $hosted,
-        'joined' => $joined,
-        'readonly' => false,
-        'userCount' => $userCount,
-        'eventCount' => $eventCount,
-        'reportCount' => $reportCount,
-        'joinCount' => $joinCount,
-    ]);
-}
+        return view('user.profile', [
+            'user'         => $user,
+            'readonly'     => false,
+            'hosted'       => $hosted,
+            'joined'       => $joined,
+            'hostCount'    => $hostCount,
+            'joinedCount'  => $joinedCount,
+        ]);
+    }
 
+    /**
+     * アバターアップデート + 自己紹介更新
+     */
     public function updateAvatar(Request $request)
     {
         $request->validate([
-            'avatar' => 'nullable|image|max:10240', // 10MBまで
+            'avatar' => 'nullable|image|max:10240', // 10MB
         ]);
 
         $user = Auth::user();
@@ -55,74 +59,67 @@ class ProfileController extends Controller
         // 画像があれば保存
         if ($request->hasFile('avatar')) {
 
+            // 旧画像削除
             if ($user->avatar_path) {
                 Storage::disk('public')->delete($user->avatar_path);
             }
 
+            // 新しい画像を保存
             $path = $request->file('avatar')->store('avatars', 'public');
             $user->avatar_path = $path;
         }
 
         // 自己紹介更新
         $user->self_introduction = $request->self_introduction;
-
         $user->save();
 
         return back()->with('success', 'プロフィールを更新しました！');
     }
 
+    /**
+     * 他ユーザーのプロフィール表示
+     */
     public function showOtherUser($id)
-{
-    $user = User::findOrFail($id);
+    {
+        $user = User::findOrFail($id);
 
-    // ▼ 統計データ
-    $userCount = User::where('del_flg', 0)->count();
-    $eventCount = Event::where('del_flg', 0)->count();
-    $reportCount = Report::count();
-    $joinCount = Application::count();
+        // ▼ 主催イベント
+        $hosted = Event::where('user_id', $user->id)
+            ->where('del_flg', 0)
+            ->get();
 
-    // ▼ 主催/参加イベント取得
-    $hosted = Event::where('user_id', $user->id)->get();
-    $joined = Event::whereHas('applications', function($q) use ($user) {
-        $q->where('user_id', $user->id);
-    })->get();
+        // ▼ 参加イベント
+        $joined = Event::whereHas('applications', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->get();
 
-    $readonly = ($user->id !== Auth::id());
+        // ▼ 個人の統計値
+        $hostCount   = $hosted->count();
+        $joinedCount = $joined->count();
 
-    return view('user.profile', [
-        'user' => $user,
-        'hosted' => $hosted,
-        'joined' => $joined,
-        'readonly' => $readonly,
-        'userCount' => $userCount,
-        'eventCount' => $eventCount,
-        'reportCount' => $reportCount,
-        'joinCount' => $joinCount,
-    ]);
-}
+        $readonly = ($user->id !== Auth::id());
 
+        return view('user.profile', [
+            'user'         => $user,
+            'readonly'     => $readonly,
+            'hosted'       => $hosted,
+            'joined'       => $joined,
+            'hostCount'    => $hostCount,
+            'joinedCount'  => $joinedCount,
+        ]);
+    }
+
+    /**
+     * 退会処理（フラグ変更）
+     */
     public function withdraw(Request $request)
     {
         $user = Auth::user();
-
         $user->del_flg = 1;
         $user->save();
 
         Auth::logout();
 
         return redirect()->route('withdraw.complete');
-    }
-
-    private function renderProfile($user, $readonly)
-    {
-        $hosted = $user->events()->get();        // 主催イベント
-        $joined = $user->joinedEvents()->get();  // 参加イベント
-
-        return view('user.profile', [
-            'user'     => $user,
-            'readonly' => $readonly,
-            'hosted'   => $hosted,
-            'joined'   => $joined,
-        ]);
     }
 }
